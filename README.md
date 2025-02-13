@@ -1,6 +1,6 @@
 # fairy-lights-designer
 
-# Setup environment
+## Setup environment
 
 rustup update
 rustup target add wasm32-unknown-unknown
