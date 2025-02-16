@@ -88,7 +88,10 @@ static mut BUFFER: FrameBuffer = FrameBuffer {
 };
 
 pub fn frame() -> &'static mut FrameBuffer {
-    unsafe { &mut BUFFER }
+    unsafe {
+        #[allow(static_mut_refs)]
+        &mut BUFFER
+    }
 }
 
 pub fn raw_buffer() -> &'static [u8] {
