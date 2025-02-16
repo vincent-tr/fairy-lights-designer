@@ -12,6 +12,7 @@ pub struct Color {
 
 impl Color {
     pub const BLACK: Self = Self::from_rgb(0,0,0);
+    pub const WHITE: Self = Self::from_rgb(255,255,255);
 
     pub const fn from_rgb(r: u8, g: u8, b: u8) -> Self {
         Self { r, g, b, a: 255 }

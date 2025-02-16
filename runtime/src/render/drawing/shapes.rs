@@ -177,4 +177,12 @@ impl Circle {
     pub const fn radius(&self) -> usize {
         self.radius
     }
+
+    pub const fn contains(&self, point: &Point) -> bool {
+        let dx = point.x - self.center.x;
+        let dy = point.y - self.center.y;
+        let distance_sqr = (dx * dx + dy * dy) as usize;
+        let radius_sqr = self.radius * self.radius;
+        distance_sqr < radius_sqr
+    }
 }

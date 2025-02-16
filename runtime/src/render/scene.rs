@@ -1,8 +1,6 @@
 use std::sync::atomic::{AtomicBool, Ordering};
 
-use log::info;
-
-use super::drawing::{self, Color, Drawable, Fillable, Line, Point, SCREEN};
+use super::drawing::{clear, Circle, Color, Drawable, Fillable, Line, Point, SCREEN};
 
 pub const LIGHT_COUNT: usize = 100;
 
@@ -66,13 +64,25 @@ impl Scene {
             }
         }
 
-        drawing::clear(Color::BLACK);
+        clear(Color::BLACK);
 
         for i in 0..(LIGHT_COUNT - 1) {
             let line = Line::new(points[i], points[i + 1]);
-            info!("line: {:?}", line);
-            line.draw(Color::from_rgb(255, 255, 255));
+            line.draw(Color::WHITE);
         }
+
+        for x in 0..WIDTH_LIGHT_COUNT {
+            for y in 0..HEIGHT_LIGHT_COUNT {
+                let center = Point::new(
+                    (PADDING_TO_CENTER + x * SPACE_BETWEEN_LIGHTS_W) as isize,
+                    (PADDING_TO_CENTER + y * SPACE_BETWEEN_LIGHTS_H) as isize,
+                );
+
+                Circle::new(center, LIGHT_RADIUS + 1).fill(Color::WHITE);
+                Circle::new(center, LIGHT_RADIUS).fill(Color::BLACK);
+            }
+        }
+
     }
 
     fn render_lights(&self) {
@@ -84,7 +94,7 @@ impl Scene {
                 );
 
                 let index = self.coord_to_index(x, y);
-                drawing::Circle::new(center, LIGHT_RADIUS).fill(self.lights[index]);
+                Circle::new(center, LIGHT_RADIUS).fill(self.lights[index]);
             }
         }
     }

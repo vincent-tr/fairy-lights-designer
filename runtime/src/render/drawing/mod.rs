@@ -4,7 +4,7 @@ pub use shapes::*;
 
 pub use super::frame::Color;
 
-use super::frame::{ WIDTH, HEIGHT };
+use super::frame::{HEIGHT, WIDTH};
 
 pub const SCREEN: Rectangle = Rectangle::new(Point::new(0, 0), Size::new(WIDTH, HEIGHT));
 
@@ -33,13 +33,13 @@ impl Drawable for Line {
     fn draw(&self, color: Color) {
         let dx = self.end().x() - self.start().x();
         let dy = self.end().y() - self.start().y();
-    
+
         let steps = dx.abs().max(dy.abs());
-    
+
         for i in 0..=steps {
             let x = self.start().x() + (dx * i) / steps;
             let y = self.start().y() + (dy * i) / steps;
-    
+
             Point::new(x, y).draw(color);
         }
     }
@@ -59,23 +59,23 @@ impl Drawable for Circle {
         let mut x = self.radius() as isize;
         let mut y = 0;
         let mut err = 0;
-    
+
         while x >= y {
             (self.center() + Offset::new(x, y)).draw(color);
             (self.center() + Offset::new(y, x)).draw(color);
             (self.center() + Offset::new(-y, x)).draw(color);
             (self.center() + Offset::new(-x, y)).draw(color);
-    
+
             (self.center() + Offset::new(-x, -y)).draw(color);
             (self.center() + Offset::new(-y, -x)).draw(color);
             (self.center() + Offset::new(y, -x)).draw(color);
             (self.center() + Offset::new(x, -y)).draw(color);
-        
+
             if err <= 0 {
                 y += 1;
                 err += 2 * y + 1;
             }
-    
+
             if err > 0 {
                 x -= 1;
                 err -= 2 * x + 1;
@@ -96,14 +96,21 @@ impl Fillable for Rectangle {
 
 impl Fillable for Circle {
     fn fill(&self, color: Color) {
-        let r = self.radius() as isize;
-        for x in -r..r {
-            let height = round(sqrt((r * r - x * x) as f64)) as isize;
+        let bounding_box = Rectangle::new(
+            Point::new(
+                self.center().x() - self.radius() as isize,
+                self.center().y() - self.radius() as isize,
+            ),
+            Size::new(self.radius() * 2, self.radius() * 2),
+        );
 
-            for y in -height..height {
-                (self.center() + Offset::new(x, y)).draw(color);
+        for x in bounding_box.left()..bounding_box.right() {
+            for y in bounding_box.top()..bounding_box.bottom() {
+                let point = Point::new(x, y);
+                if self.contains(&point) {
+                    point.draw(color);
+                }
             }
         }
     }
 }
-
