@@ -8,6 +8,8 @@
     "start": "webpack-dev-server"
   },
   "dependencies": {
+    "@blockly/field-colour": "^5.0.12",
+    "blockly": "^11.2.1",
     "runtime": "file:../runtime/pkg"
   },
   "devDependencies": {
