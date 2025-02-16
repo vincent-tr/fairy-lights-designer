@@ -115,17 +115,6 @@ impl Rectangle {
         Self { origin, size }
     }
 
-    pub fn new_with_points(p1: Point, p2: Point) -> Self {
-        let origin = Point::new(p1.x.min(p2.x), p1.y.min(p2.y));
-        let target = Point::new(p1.x.max(p2.x), p1.y.max(p2.y));
-        let size = target.checked_sub(origin).unwrap();
-
-        Self {
-            origin,
-            size,
-        }
-    }
-
     pub const fn top_left(&self) -> Point {
         self.origin
     }
@@ -146,19 +135,19 @@ impl Rectangle {
         Point::new(self.origin.x + self.size.width as isize, self.origin.y + self.size.height as isize)
     }
 
-    pub fn left(&self) -> isize {
+    pub const fn left(&self) -> isize {
         self.origin.x
     }
 
-    pub fn right(&self) -> isize {
+    pub const fn right(&self) -> isize {
         self.origin.x + self.size.width as isize
     }
 
-    pub fn top(&self) -> isize {
+    pub const fn top(&self) -> isize {
         self.origin.y
     }
 
-    pub fn bottom(&self) -> isize {
+    pub const fn bottom(&self) -> isize {
         self.origin.y + self.size.height as isize
     }
 

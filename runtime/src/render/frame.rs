@@ -11,7 +11,7 @@ pub struct Color {
 }
 
 impl Color {
-    pub fn from_rgb(r: u8, g: u8, b: u8) -> Self {
+    pub const fn from_rgb(r: u8, g: u8, b: u8) -> Self {
         Self { r, g, b, a: 255 }
     }
 
@@ -37,15 +37,15 @@ impl Color {
         self.b = b;
     }
 
-    pub fn red(&self) -> u8 {
+    pub const fn red(&self) -> u8 {
         self.r
     }
 
-    pub fn green(&self) -> u8 {
+    pub const fn green(&self) -> u8 {
         self.g
     }
 
-    pub fn blue(&self) -> u8 {
+    pub const fn blue(&self) -> u8 {
         self.b
     }
 }
