@@ -1,7 +1,7 @@
 mod render;
 mod fps_printer;
 
-use render::drawing::{Point, Size, Rectangle, Color};
+use render::drawing::{Circle, Color, Drawable, Fillable, Line, Point, Rectangle, Size};
 use wasm_bindgen::prelude::*;
 use js_sys::Uint8ClampedArray;
 use fps_printer::FpsPrinter;
@@ -27,9 +27,14 @@ pub fn init() -> Uint8ClampedArray  {
 
 #[wasm_bindgen]
 pub fn render() {
-    render::drawing::clear(Color::from_rgb(255, 0, 0));
+    render::drawing::clear(Color::from_rgb(0, 0, 0));
 
-    render::drawing::draw_rect(&Rectangle::new(Point::new(800, 10), Size::new(10, 10)) , Color::from_rgb(0, 0, 255));
+    Rectangle::new(Point::new(800, 10), Size::new(10, 10)).fill(Color::from_rgb(0, 0, 255));
+    Circle::new(Point::new(800, 200), 100).fill(Color::from_rgb(0, 0, 255));
+
+    Rectangle::new(Point::new(100, 10), Size::new(20, 10)).draw(Color::from_rgb(0, 255, 0));
+    Line::new(Point::new(10, 10), Point::new(40, 20)).draw(Color::from_rgb(0, 255, 0));
+    Circle::new(Point::new(20, 20), 5).draw(Color::from_rgb(0, 255, 0));
 
     
     FPS_PRINTER.tick();

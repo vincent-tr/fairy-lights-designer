@@ -28,11 +28,59 @@ impl Point {
     }
 }
 
-impl Add<Size> for Point {
+impl Add<Offset> for Point {
     type Output = Point;
 
-    fn add(self, other: Size) -> Point {
-        Point::new(self.x + other.width as isize, self.y + other.height as isize)
+    fn add(self, other: Offset) -> Point {
+        Point::new(self.x + other.x, self.y + other.y)
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct Offset {
+    x: isize,
+    y: isize,
+}
+
+impl Offset {
+    pub const fn new(x: isize, y: isize) -> Self {
+        Self { x, y }
+    }
+
+    pub const fn horizontal(x: isize) -> Self {
+        Self { x, y: 0 }
+    }
+
+    pub const fn vertical(y: isize) -> Self {
+        Self { x: 0, y }
+    }
+    
+    pub const fn x(&self) -> isize {
+        self.x
+    }
+    
+    pub const fn y(&self) -> isize {
+        self.y
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct Line {
+    start: Point,
+    end: Point,
+}
+
+impl Line {
+    pub const fn new(start: Point, end: Point) -> Self {
+        Self { start, end }
+    }
+
+    pub const fn start(&self) -> Point {
+        self.start
+    }
+
+    pub const fn end(&self) -> Point {
+        self.end
     }
 }
 
@@ -67,7 +115,7 @@ impl Rectangle {
         Self { origin, size }
     }
 
-    pub fn new_with_points(p1: &Point, p2: &Point) -> Self {
+    pub fn new_with_points(p1: Point, p2: Point) -> Self {
         let origin = Point::new(p1.x.min(p2.x), p1.y.min(p2.y));
         let target = Point::new(p1.x.max(p2.x), p1.y.max(p2.y));
         let size = target.checked_sub(origin).unwrap();
@@ -120,27 +168,24 @@ impl Rectangle {
             && point.y >= self.origin.y
             && point.y < self.origin.y + self.size.height as isize
     }
+}
 
-    pub fn clamp(&self, boundaries: &Rectangle) -> Rectangle {
-        let boundary_top_left = boundaries.top_left();
-        let boundary_bottom_right = boundaries.bottom_right();
+#[derive(Debug, Clone, Copy)]
+pub struct Circle {
+    center: Point,
+    radius: usize,
+}
 
-        let mut top_left = self.top_left();
-        let mut bottom_right = self.bottom_right();
+impl Circle {
+    pub const fn new(center: Point, radius: usize) -> Self {
+        Self { center, radius }
+    }
 
-        if top_left.x < boundary_top_left.x {
-            top_left.x = boundary_top_left.x;
-        }
-        if top_left.y < boundary_top_left.y {
-            top_left.y = boundary_top_left.y;
-        }
-        if bottom_right.x > boundary_bottom_right.x {
-            bottom_right.x = boundary_bottom_right.x;
-        }
-        if bottom_right.y > boundary_bottom_right.y {
-            bottom_right.y = boundary_bottom_right.y;
-        }
+    pub const fn center(&self) -> Point {
+        self.center
+    }
 
-        return Rectangle::new_with_points(&top_left, &bottom_right);
+    pub const fn radius(&self) -> usize {
+        self.radius
     }
 }
