@@ -1,5 +1,4 @@
 mod shapes;
-use js_sys::Math::{round, sqrt};
 pub use shapes::*;
 
 pub use super::frame::Color;
