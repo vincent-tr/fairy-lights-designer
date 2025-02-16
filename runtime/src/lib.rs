@@ -33,15 +33,6 @@ pub fn init() -> Uint8ClampedArray  {
 
 #[wasm_bindgen]
 pub fn render() {
-    render::drawing::clear(Color::from_rgb(0, 0, 0));
-
-    Rectangle::new(Point::new(800, 10), Size::new(10, 10)).fill(Color::from_rgb(0, 0, 255));
-    Circle::new(Point::new(800, 200), 100).fill(Color::from_rgb(0, 0, 255));
-
-    Rectangle::new(Point::new(100, 10), Size::new(20, 10)).draw(Color::from_rgb(0, 255, 0));
-    Line::new(Point::new(10, 10), Point::new(40, 20)).draw(Color::from_rgb(0, 255, 0));
-    Circle::new(Point::new(20, 20), 5).draw(Color::from_rgb(0, 255, 0));
-    
     FPS_PRINTER.tick();
 
     unsafe {
