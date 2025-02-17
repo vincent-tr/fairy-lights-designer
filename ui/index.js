@@ -32,6 +32,9 @@ function setup_wasm() {
 }
 
 function setup_blockly() {
+  // Disable 'set variable to'
+  Blockly.Blocks['math_change'] = null;
+
   Blockly.defineBlocksWithJsonArray(blocks);
   const workspace = Blockly.inject('blockly', { toolbox });
 
@@ -54,6 +57,9 @@ function setup_blockly() {
 
   runButton.addEventListener('click', () => {
     const output = generator.workspaceToCode(workspace);
+    Blockly.Variables.allUsedVarModels(workspace).forEach(variable => {
+      console.log("variable: ", variable.getId(), variable.name);
+    });
     console.log(output);
   });
 
@@ -61,17 +67,12 @@ function setup_blockly() {
     const fileBlob = new Blob([text], { type: 'application/octet-binary' })
     const url = URL.createObjectURL(fileBlob)
   
-    const link = document.createElement('a')
-    link.setAttribute('href', url)
-    link.setAttribute('download', filename)
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
   
-    if (document.createEvent) {
-      const event = document.createEvent('MouseEvents')
-      event.initEvent('click', true, true)
-      link.dispatchEvent(event)
-    } else {
-      link.click()
-    }
+    const event = new MouseEvent('click');
+    link.dispatchEvent(event)
   
     // Deallocate resources
     if (URL.revokeObjectURL)
