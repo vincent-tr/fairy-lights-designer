@@ -4,6 +4,7 @@ import * as Blockly from "blockly";
 
 import toolbox from './toolbox';
 import blocks from './blocks';
+import { generator } from './generator';
 
 setup_wasm();
 setup_blockly();
@@ -36,6 +37,7 @@ function setup_blockly() {
 
   const loadButton = document.getElementById('load');
   const saveButton = document.getElementById('save');
+  const runButton = document.getElementById('run');
 
   loadButton.addEventListener('click', async () => {
     const file = await open({ accept: '.json' });
@@ -48,6 +50,11 @@ function setup_blockly() {
   saveButton.addEventListener('click', async () => {
     const state = Blockly.serialization.workspaces.save(workspace);
     download('workspace.json', JSON.stringify(state));
+  });
+
+  runButton.addEventListener('click', () => {
+    const output = generator.workspaceToCode(workspace);
+    console.log(output);
   });
 
   function download(filename, text) {
@@ -98,8 +105,7 @@ function setup_blockly() {
   
       document.body.appendChild(input)
   
-      const event = document.createEvent('MouseEvent')
-      event.initMouseEvent('click', false, false, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null)
+      const event = new MouseEvent('click');
       input.dispatchEvent(event)
     })
   }
