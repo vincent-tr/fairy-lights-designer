@@ -7,7 +7,13 @@
   <body>
     <div style="display:flex;">
       <canvas id="canvas" width="1000" height="1000"></canvas>
-      <div id="blockly" style="flex:auto;"></div>
+      <div style="flex:auto; display:flex; flex-direction: column;">
+        <div>
+          <button id="load">Load</button>
+          <button id="save">Save</button>
+        </div>
+        <div id="blockly" style="flex:auto;"></div>
+      </div>
     </div>
   </body>
   <script src="./bootstrap.js"></script>
