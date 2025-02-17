@@ -1,8 +1,8 @@
 import * as wasm from "../runtime/pkg/runtime";
-import * as Blockly from "blockly/core";
-import "blockly/blocks";
-import "blockly/msg/en"
-import {registerFieldColour, FieldColour} from '@blockly/field-colour';
+
+import * as Blockly from "blockly";
+
+import toolbox from './toolbox';
 
 setup_wasm();
 setup_blockly();
@@ -30,8 +30,6 @@ function setup_wasm() {
 }
 
 function setup_blockly() {
-  registerFieldColour();
-
   Blockly.defineBlocksWithJsonArray([
     {
       "type": "set",
@@ -63,33 +61,24 @@ function setup_blockly() {
       "previousStatement": null,
       "nextStatement": null,
       "colour": 90
+    },
+    {
+      "type": "sleep",
+      "tooltip": "",
+      "helpUrl": "",
+      "message0": "sleep %1ms",
+      "args0": [
+        {
+          "type": "input_value",
+          "name": "delay",
+          "check": "Number"
+        }
+      ],
+      "colour": 90
     }
   ]);
-    
-
-
-  const toolbox = {
-    // There are two kinds of toolboxes. The simpler one is a flyout toolbox.
-    kind: 'flyoutToolbox',
-    // The contents is the blocks and other items that exist in your toolbox.
-    contents: [
-      {
-        kind: 'block',
-        type: 'set',
-      },
-      {
-        kind: 'block',
-        type: 'controls_if'
-      },
-      {
-        kind: 'block',
-        type: 'controls_whileUntil'
-      }
-      // You can add more blocks to this array.
-    ]
-  };
 
   Blockly.inject('blockly', {
-    toolbox: toolbox,
+    toolbox,
   })
 }
