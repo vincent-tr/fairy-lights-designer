@@ -3,6 +3,7 @@ import * as wasm from "../runtime/pkg/runtime";
 import * as Blockly from "blockly";
 
 import toolbox from './toolbox';
+import blocks from './blocks';
 
 setup_wasm();
 setup_blockly();
@@ -30,53 +31,7 @@ function setup_wasm() {
 }
 
 function setup_blockly() {
-  Blockly.defineBlocksWithJsonArray([
-    {
-      "type": "set",
-      "tooltip": "",
-      "helpUrl": "",
-      "message0": "Set light color\nIndex = %1\nRed = %2 Green = %3 Blue = %4",
-      "args0": [
-        {
-          "type": "input_value",
-          "name": "index",
-          "check": "Number"
-        },
-        {
-          "type": "input_value",
-          "name": "r",
-          "check": "Number"
-        },
-        {
-          "type": "input_value",
-          "name": "g",
-          "check": "Number"
-        },
-        {
-          "type": "input_value",
-          "name": "b",
-          "check": "Number"
-        }
-      ],
-      "previousStatement": null,
-      "nextStatement": null,
-      "colour": 90
-    },
-    {
-      "type": "sleep",
-      "tooltip": "",
-      "helpUrl": "",
-      "message0": "sleep %1ms",
-      "args0": [
-        {
-          "type": "input_value",
-          "name": "delay",
-          "check": "Number"
-        }
-      ],
-      "colour": 90
-    }
-  ]);
+  Blockly.defineBlocksWithJsonArray(blocks);
 
   Blockly.inject('blockly', {
     toolbox,

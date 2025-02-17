@@ -35,11 +35,13 @@ export default {
             BOOL: 'TRUE',
           },
         },
+/*
         {
           type: 'logic_null',
           kind: 'block',
           enabled: false,
         },
+*/
         {
           type: 'logic_ternary',
           kind: 'block',
@@ -65,6 +67,7 @@ export default {
             },
           },
         },
+/*
         {
           type: 'controls_repeat',
           kind: 'block',
@@ -73,6 +76,7 @@ export default {
             TIMES: 10,
           },
         },
+*/
         {
           type: 'controls_whileUntil',
           kind: 'block',
@@ -115,6 +119,7 @@ export default {
             },
           },
         },
+/*
         {
           type: 'controls_forEach',
           kind: 'block',
@@ -124,10 +129,11 @@ export default {
             },
           },
         },
+*/
         {
           type: 'controls_flow_statements',
           kind: 'block',
-          enabled: false,
+          // enabled: false,
           fields: {
             FLOW: 'BREAK',
           },
@@ -171,7 +177,9 @@ export default {
             },
           },
         },
+/*
         {
+          // TODO: only keep ABS and NEG
           type: 'math_single',
           kind: 'block',
           fields: {
@@ -188,6 +196,8 @@ export default {
             },
           },
         },
+*/
+/*
         {
           type: 'math_trig',
           kind: 'block',
@@ -205,6 +215,8 @@ export default {
             },
           },
         },
+*/
+/*
         {
           type: 'math_constant',
           kind: 'block',
@@ -212,7 +224,10 @@ export default {
             CONSTANT: 'PI',
           },
         },
+*/
+/*
         {
+          // TODO: only keep EVEN, ODD, positive, negative
           type: 'math_number_property',
           kind: 'block',
           fields: {
@@ -229,6 +244,8 @@ export default {
             },
           },
         },
+*/
+/*
         {
           type: 'math_round',
           kind: 'block',
@@ -246,6 +263,8 @@ export default {
             },
           },
         },
+*/
+/*
         {
           type: 'math_on_list',
           kind: 'block',
@@ -253,6 +272,7 @@ export default {
             OP: 'SUM',
           },
         },
+*/
         {
           type: 'math_modulo',
           kind: 'block',
@@ -327,10 +347,13 @@ export default {
             },
           },
         },
+/*
         {
           type: 'math_random_float',
           kind: 'block',
         },
+*/
+/*
         {
           type: 'math_atan2',
           kind: 'block',
@@ -353,6 +376,7 @@ export default {
             },
           },
         },
+*/
       ],
     },
 /*
@@ -782,6 +806,24 @@ export default {
       name: 'Functions',
       categorystyle: 'procedure_category',
       contents: [
+        {
+          type: 'len',
+          kind: 'block',
+        },
+        {
+          type: 'get',
+          kind: 'block',
+          inputs: {
+            index: {
+              shadow: {
+                type: 'math_number',
+                fields: {
+                  NUM: 0,
+                },
+              },
+            },
+          },
+        },
         {
           type: 'set',
           kind: 'block',
