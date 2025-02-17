@@ -23,7 +23,11 @@ generator.forBlock['logic_negate'] = function(block, generator) {
 }
 
 generator.forBlock['logic_boolean'] = function(block, generator) {
-  throw new Error('Not implemented: logic_boolean');
+  const value = block.getFieldValue('BOOL') === 'TRUE';
+  return [
+    `{ "type": "literal", "value": ${value} }`,
+    Order.ATOMIC
+  ];
 }
 
 generator.forBlock['logic_ternary'] = function(block, generator) {
@@ -35,7 +39,11 @@ generator.forBlock['controls_repeat_ext'] = function(block, generator) {
 }
 
 generator.forBlock['controls_whileUntil'] = function(block, generator) {
-  throw new Error('Not implemented: controls_whileUntil');
+  const type = block.getFieldValue('MODE') === 'UNTIL' ? 'until' : 'while';
+  const cond = generator.valueToCode(block, 'BOOL', Order.ATOMIC) || 'false';
+  const body = generator.statementToCode(block, 'DO');
+
+  return `{ "type": "${type}", "condition": ${cond}, "body": ${body} }`;
 }
 
 generator.forBlock['controls_for'] = function(block, generator) {
