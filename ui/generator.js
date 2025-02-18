@@ -4,7 +4,26 @@ const Order = {
   ATOMIC: 0,
 };
 
-export const generator = new Blockly.Generator('fairy-lights-runtime');
+class AstGenerator extends Blockly.CodeGenerator {
+  constructor(name = 'fairy-lights-runtime') {
+    super(name);
+  }
+
+  init(workspace) {
+    super.init(workspace);
+
+    if (!this.nameDB_) {
+      this.nameDB_ = new Blockly.Names();
+    } else {
+      this.nameDB_.reset();
+    }
+
+    this.nameDB_.setVariableMap(workspace.getVariableMap());
+    this.nameDB_.populateVariables(workspace);
+  }
+}
+
+export const generator = new AstGenerator();
 
 generator.forBlock['logic_compare'] = function(block, generator) {
   
@@ -113,7 +132,7 @@ generator.forBlock['controls_whileUntil'] = function(block, generator) {
 
 generator.forBlock['controls_for'] = function(block, generator) {
 
-  const variable = block.getFieldValue('VAR');
+  const variable = generator.getVariableName(block.getFieldValue('VAR'));
   const argFrom = generator.valueToCode(block, 'FROM', Order.ASSIGNMENT);
   const argTo = generator.valueToCode(block, 'TO', Order.ASSIGNMENT);
   const argBy = generator.valueToCode(block, 'BY', Order.ASSIGNMENT);
@@ -123,7 +142,7 @@ generator.forBlock['controls_for'] = function(block, generator) {
     throw new Error('Missing operands');
   }
 
-  return `{ "type": "for", "variable": "${variable}", "from": ${argFrom}, "to": ${argTo}, "by": ${argBy}, "body": ${body} }`;
+  return `{ "type": "for", "variable": "${name}", "from": ${argFrom}, "to": ${argTo}, "by": ${argBy}, "body": ${body} }`;
 }
 
 generator.forBlock['controls_flow_statements'] = function(block, generator) {
@@ -207,17 +226,19 @@ generator.forBlock['math_random_int'] = function(block, generator) {
 }
 
 generator.forBlock['variables_get'] = function(block, generator) {
-  const id = block.getFieldValue('VAR');
+  const variable = generator.getVariableName(block.getFieldValue('VAR'));
+
   return [
-    `{ "type": "get_variable", "variable": "${id}" }`,
+    `{ "type": "get_variable", "variable": "${variable}" }`,
     Order.ATOMIC
   ];
 }
 
 generator.forBlock['variables_set'] = function(block, generator) {
-  const name = block.getFieldValue('VAR');
+  const variable = generator.getVariableName(block.getFieldValue('VAR'));
   const value = generator.valueToCode(block, 'VALUE', Order.ATOMIC);
-  return `{ "type": "set_variable", "variable": "${name}", "value": ${value} }`;
+
+  return `{ "type": "set_variable", "variable": "${variable}", "value": ${value} }`;
 }
 
 generator.forBlock['len'] = function(block, generator) {

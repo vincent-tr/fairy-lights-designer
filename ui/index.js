@@ -60,7 +60,7 @@ function setup_blockly() {
     Blockly.Variables.allUsedVarModels(workspace).forEach(variable => {
       console.log("variable: ", variable.getId(), variable.name);
     });
-    console.log(output);
+    console.log(JSON.parse(output));
   });
 
   function download(filename, text) {
