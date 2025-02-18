@@ -6,42 +6,101 @@ const Order = {
 
 export const generator = new Blockly.Generator('fairy-lights-runtime');
 
-generator.forBlock['controls_if'] = function(block, generator) {
-  throw new Error('Not implemented: controls_if');
-};
-
 generator.forBlock['logic_compare'] = function(block, generator) {
-  throw new Error('Not implemented: logic_compare');
+  const OPERATORS = {
+    'EQ': 'eq',
+    'NEQ': 'neq',
+    'LT': 'lt',
+    'LTE': 'lte',
+    'GT': 'gt',
+    'GTE': 'gte',
+  };
+
+  const op1 = generator.valueToCode(block, 'A', Order.ATOMIC);
+  const op2 = generator.valueToCode(block, 'B', Order.ATOMIC);
+  const op = OPERATORS[block.getFieldValue('OP')];
+
+  if (!op) {
+    throw new Error('Unknown operator: ' + block.getFieldValue('OP'));
+  }
+
+  if (!op1 || !op2) {
+    throw new Error('Missing operands');
+  }
+
+  return [
+    `{ "type": "${op}", "op1": ${op1}, "op2": ${op2} }`,
+    Order.ATOMIC
+  ];
 };
 
 generator.forBlock['logic_operation'] = function(block, generator) {
-  throw new Error('Not implemented: logic_operation');
-}
+  const OPERATORS = {
+    'AND': 'and',
+    'OR': 'or',
+  }
 
-generator.forBlock['logic_negate'] = function(block, generator) {
-  throw new Error('Not implemented: logic_negate');
-}
+  const op1 = generator.valueToCode(block, 'A', Order.ATOMIC);
+  const op2 = generator.valueToCode(block, 'B', Order.ATOMIC);
+  const op = OPERATORS[block.getFieldValue('OP')];
 
-generator.forBlock['logic_boolean'] = function(block, generator) {
-  const value = block.getFieldValue('BOOL') === 'TRUE';
+  if (!op1 || !op2) {
+    throw new Error('Missing operands');
+  }
+
   return [
-    `{ "type": "literal", "value": ${value} }`,
+    `{ "type": "${op}", "op1": ${op1}, "op2": ${op2} }`,
     Order.ATOMIC
   ];
 }
 
-generator.forBlock['logic_ternary'] = function(block, generator) {
-  throw new Error('Not implemented: logic_ternary');
+generator.forBlock['logic_negate'] = function(block, generator) {
+  const op1 = generator.valueToCode(block, 'BOOL', order);
+
+  if (!op1) {
+    throw new Error('Missing operand');
+  }
+
+  return [
+    `{ "type": "not", "value": ${op1} }`,
+    Order.ATOMIC
+  ];
 }
+
+generator.forBlock['logic_boolean'] = function(block, generator) {
+  const value = block.getFieldValue('BOOL') === 'TRUE';
+
+  return [
+    `{ "type": "literal_boolean", "value": ${value} }`,
+    Order.ATOMIC
+  ];
+}
+
+generator.forBlock['controls_if'] = function(block, generator) {
+  throw new Error('Not implemented: controls_if');
+};
 
 generator.forBlock['controls_repeat_ext'] = function(block, generator) {
   throw new Error('Not implemented: controls_repeat_ext');
 }
 
 generator.forBlock['controls_whileUntil'] = function(block, generator) {
-  const type = block.getFieldValue('MODE') === 'UNTIL' ? 'until' : 'while';
-  const cond = generator.valueToCode(block, 'BOOL', Order.ATOMIC) || 'false';
+  const TYPES = {
+    'UNTIL': 'until',
+    'WHILE': 'while',
+  }
+
+  const type = TYPES[block.getFieldValue('MODE')];
+  const cond = generator.valueToCode(block, 'BOOL', Order.ATOMIC);
   const body = generator.statementToCode(block, 'DO');
+
+  if (!op) {
+    throw new Error('Unknown type: ' + block.getFieldValue('MODE'));
+  }
+
+  if (!cond || !body) {
+    throw new Error('Missing operands');
+  }
 
   return `{ "type": "${type}", "condition": ${cond}, "body": ${body} }`;
 }
@@ -56,6 +115,7 @@ generator.forBlock['controls_flow_statements'] = function(block, generator) {
 
 generator.forBlock['math_number'] = function(block, generator) {
   const value = block.getFieldValue('NUM');
+  
   return [
     `{ "type": "literal", "value": ${value} }`,
     Order.ATOMIC
