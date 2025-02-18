@@ -56,7 +56,7 @@ generator.forBlock['controls_if'] = function(block, generator) {
   const branches = [];
 
   for (let n = 0; block.getInput('IF' + n); ++n) {
-    const cond = generator.valueToCode(block, 'IF' + n, Order.NONE);
+    const cond = generator.valueToCode(block, 'IF' + n, Order.ATOMIC);
     const body = generator.statementToCode(block, 'DO' + n);
 
     if (!cond || !body) {
@@ -164,15 +164,46 @@ generator.forBlock['math_arithmetic'] = function(block, generator) {
 }
 
 generator.forBlock['math_modulo'] = function(block, generator) {
-  throw new Error('Not implemented: math_modulo');
+  const op1 = generator.valueToCode(block, 'A', Order.ATOMIC);
+  const op2 = generator.valueToCode(block, 'B', Order.ATOMIC);
+
+  if (!op1 || !op2) {
+    throw new Error('Missing operands');
+  }
+
+  return [
+    `{ "type": "mod", "op1": ${op1}, "op2": ${op2} }`,
+    Order.ATOMIC
+  ];
 }
 
 generator.forBlock['math_constrain'] = function(block, generator) {
-  throw new Error('Not implemented: math_constrain');
+  const value = generator.valueToCode(block, 'VALUE', Order.ATOMIC);
+  const low = generator.valueToCode(block, 'LOW', Order.ATOMIC);
+  const high = generator.valueToCode(block, 'HIGH', Order.ATOMIC);
+
+  if (!value || !low || !high) {
+    throw new Error('Missing operands');
+  }
+
+  return [
+    `{ "type": "between", "value": ${value}, "low": ${low}, "high": ${high} }`,
+    Order.ATOMIC
+  ];
 }
 
 generator.forBlock['math_random_int'] = function(block, generator) {
-  throw new Error('Not implemented: math_random_int');
+  const min = generator.valueToCode(block, 'FROM', Order.ATOMIC);
+  const max = generator.valueToCode(block, 'TO', Order.ATOMIC);
+
+  if (!min || !max) {
+    throw new Error('Missing operands');
+  }
+
+  return [
+    `{ "type": "rand", "min": ${min}, "max": ${max} }`,
+    Order.ATOMIC
+  ];
 }
 
 generator.forBlock['variables_get'] = function(block, generator) {
@@ -223,7 +254,7 @@ function operator_ab(block, generator, operators) {
   }
 
   return [
-    `{ "op1": ${op1}, "op2": ${op2} }`,
+    `{ "type": "${op}", "op1": ${op1}, "op2": ${op2} }`,
     Order.ATOMIC
   ];
 }
