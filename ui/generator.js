@@ -7,6 +7,7 @@ const Order = {
 export const generator = new Blockly.Generator('fairy-lights-runtime');
 
 generator.forBlock['logic_compare'] = function(block, generator) {
+  
   const OPERATORS = {
     'EQ': 'eq',
     'NEQ': 'neq',
@@ -16,42 +17,17 @@ generator.forBlock['logic_compare'] = function(block, generator) {
     'GTE': 'gte',
   };
 
-  const op1 = generator.valueToCode(block, 'A', Order.ATOMIC);
-  const op2 = generator.valueToCode(block, 'B', Order.ATOMIC);
-  const op = OPERATORS[block.getFieldValue('OP')];
-
-  if (!op) {
-    throw new Error('Unknown operator: ' + block.getFieldValue('OP'));
-  }
-
-  if (!op1 || !op2) {
-    throw new Error('Missing operands');
-  }
-
-  return [
-    `{ "type": "${op}", "op1": ${op1}, "op2": ${op2} }`,
-    Order.ATOMIC
-  ];
+  return operator_ab(block, generator, OPERATORS);
 };
 
 generator.forBlock['logic_operation'] = function(block, generator) {
+  
   const OPERATORS = {
     'AND': 'and',
     'OR': 'or',
   }
 
-  const op1 = generator.valueToCode(block, 'A', Order.ATOMIC);
-  const op2 = generator.valueToCode(block, 'B', Order.ATOMIC);
-  const op = OPERATORS[block.getFieldValue('OP')];
-
-  if (!op1 || !op2) {
-    throw new Error('Missing operands');
-  }
-
-  return [
-    `{ "type": "${op}", "op1": ${op1}, "op2": ${op2} }`,
-    Order.ATOMIC
-  ];
+  return operator_ab(block, generator, OPERATORS);
 }
 
 generator.forBlock['logic_negate'] = function(block, generator) {
@@ -175,7 +151,16 @@ generator.forBlock['math_number'] = function(block, generator) {
 }
 
 generator.forBlock['math_arithmetic'] = function(block, generator) {
-  throw new Error('Not implemented: math_arithmetic');
+
+  const OPERATORS = {
+    'ADD': 'add',
+    'MINUS': 'sub',
+    'MULTIPLY': 'mul',
+    'DIVIDE': 'div',
+    'POWER': 'pow',
+  };
+
+  return operator_ab(block, generator, OPERATORS);
 }
 
 generator.forBlock['math_modulo'] = function(block, generator) {
@@ -223,3 +208,22 @@ generator.forBlock['sleep'] = function(block, generator) {
   const delay = generator.valueToCode(block, 'delay', Order.ATOMIC);
   return `{ "type": "sleep", "delay": ${delay} }`;
 };
+
+function operator_ab(block, generator, operators) {
+  const op = operators[block.getFieldValue('OP')];
+  const op1 = generator.valueToCode(block, 'A', Order.ATOMIC);
+  const op2 = generator.valueToCode(block, 'B', Order.ATOMIC);
+
+  if (!op) {
+    throw new Error('Unknown operator: ' + block.getFieldValue('OP'));
+  }
+
+  if (!op1 || !op2) {
+    throw new Error('Missing operands');
+  }
+
+  return [
+    `{ "op1": ${op1}, "op2": ${op2} }`,
+    Order.ATOMIC
+  ];
+}
