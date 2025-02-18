@@ -42,12 +42,14 @@ export default {
           enabled: false,
         },
 */
+/*
         {
           type: 'logic_ternary',
           kind: 'block',
         },
       ],
     },
+*/
     {
       kind: 'category',
       name: 'Loops',
