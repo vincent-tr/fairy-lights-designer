@@ -100,7 +100,7 @@ generator.forBlock['controls_whileUntil'] = function(block, generator) {
   const cond = generator.valueToCode(block, 'BOOL', Order.ATOMIC);
   const body = generator.statementToCode(block, 'DO');
 
-  if (!op) {
+  if (!type) {
     throw new Error('Unknown type: ' + block.getFieldValue('MODE'));
   }
 
