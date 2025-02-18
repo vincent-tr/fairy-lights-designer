@@ -77,11 +77,41 @@ generator.forBlock['logic_boolean'] = function(block, generator) {
 }
 
 generator.forBlock['controls_if'] = function(block, generator) {
-  throw new Error('Not implemented: controls_if');
+  const branches = [];
+
+  for (let n = 0; block.getInput('IF' + n); ++n) {
+    const cond = generator.valueToCode(block, 'IF' + n, Order.NONE);
+    const body = generator.statementToCode(block, 'DO' + n);
+
+    if (!cond || !body) {
+      throw new Error('Missing operands');
+    }
+
+    branches.push(`{ "condition": ${cond}, "body": ${body} }`);
+  }
+
+  if (branches.length === 0) {
+    throw new Error('Missing branches');
+  }
+
+  if (block.getInput('ELSE')) {
+    const body = generator.statementToCode(block, 'ELSE');
+    branches.push(`{ "condition": null, "body": ${body} }`);
+  }
+
+  return `{ "type": "if", "branches": [${branches.join(', ')}] }`;
 };
 
 generator.forBlock['controls_repeat_ext'] = function(block, generator) {
-  throw new Error('Not implemented: controls_repeat_ext');
+
+  const repeats = generator.valueToCode(block, 'TIMES', Order.ATOMIC);
+  const branch = generator.statementToCode(block, 'DO');
+
+  if (!repeats || !branch) {
+    throw new Error('Missing operands');
+  }
+
+  return `{ "type": "repeat", "times": ${repeats}, "body": ${branch} }`;
 }
 
 generator.forBlock['controls_whileUntil'] = function(block, generator) {
@@ -106,11 +136,33 @@ generator.forBlock['controls_whileUntil'] = function(block, generator) {
 }
 
 generator.forBlock['controls_for'] = function(block, generator) {
-  throw new Error('Not implemented: controls_for');
+
+  const variable = block.getFieldValue('VAR');
+  const argFrom = generator.valueToCode(block, 'FROM', Order.ASSIGNMENT);
+  const argTo = generator.valueToCode(block, 'TO', Order.ASSIGNMENT);
+  const argBy = generator.valueToCode(block, 'BY', Order.ASSIGNMENT);
+  const body = generator.statementToCode(block, 'DO');
+
+  if (!variable || !argFrom || !argTo || !argBy || !body) {
+    throw new Error('Missing operands');
+  }
+
+  return `{ "type": "for", "variable": "${variable}", "from": ${argFrom}, "to": ${argTo}, "by": ${argBy}, "body": ${body} }`;
 }
 
 generator.forBlock['controls_flow_statements'] = function(block, generator) {
-  throw new Error('Not implemented: controls_flow_statements');
+  const TYPES = {
+    'BREAK': 'break',
+    'CONTINUE': 'continue',
+  }
+
+  const type = TYPES[block.getFieldValue('FLOW')];
+
+  if (!type) {
+    throw new Error('Unknown type: ' + block.getFieldValue('FLOW'));
+  }
+
+  return `{ "type": "${type}" }`;
 }
 
 generator.forBlock['math_number'] = function(block, generator) {
@@ -139,17 +191,24 @@ generator.forBlock['math_random_int'] = function(block, generator) {
 }
 
 generator.forBlock['variables_get'] = function(block, generator) {
-  return `{ "type": "get_variable", "id": "${block.getFieldValue('VAR')}" }`;
+  const id = block.getFieldValue('VAR');
+  return [
+    `{ "type": "get_variable", "variable": "${id}" }`,
+    Order.ATOMIC
+  ];
 }
 
 generator.forBlock['variables_set'] = function(block, generator) {
   const name = block.getFieldValue('VAR');
   const value = generator.valueToCode(block, 'VALUE', Order.ATOMIC);
-  return `{ "type": "set_variable", "id": "${name}", "value": ${value} }`;
+  return `{ "type": "set_variable", "variable": "${name}", "value": ${value} }`;
 }
 
 generator.forBlock['len'] = function(block, generator) {
-  return `{ "type": "len" }`;
+  return [
+    `{ "type": "len" }`,
+    Order.ATOMIC
+  ];
 };
 
 generator.forBlock['get'] = function(block, generator) {
