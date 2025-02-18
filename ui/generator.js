@@ -228,11 +228,33 @@ generator.forBlock['len'] = function(block, generator) {
 };
 
 generator.forBlock['get'] = function(block, generator) {
-  throw new Error('Not implemented: get');
+  const TYPES = {
+    'r': 'red',
+    'g': 'green',
+    'b': 'blue',
+  };
+
+  const index = generator.valueToCode(block, 'index', Order.ATOMIC);
+  const type = TYPES[block.getFieldValue('type')];
+
+  if (!index || !type) {
+    throw new Error('Missing operands');
+  }
+
+  return [
+    `{ "type": "get", "index": ${index}, "type": "${type}" }`,
+    Order.ATOMIC
+  ];
 };
 
 generator.forBlock['set'] = function(block, generator) {
-  throw new Error('Not implemented: set');
+  const index = generator.valueToCode(block, 'index', Order.ATOMIC);
+  const red = generator.valueToCode(block, 'red', Order.ATOMIC);
+  const green = generator.valueToCode(block, 'green', Order.ATOMIC);
+  const blue = generator.valueToCode(block, 'blue', Order.ATOMIC);
+
+  
+  return `{ "type": "set", "index": ${index}, "red": ${red}, "green": ${green}, "blue": ${blue} }`;
 };
 
 generator.forBlock['sleep'] = function(block, generator) {
