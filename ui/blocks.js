@@ -45,7 +45,7 @@ export default [
     "type": "set",
     "tooltip": "Set the color of a light",
     "helpUrl": "",
-    "message0": "Set light color\nIndex = %1\nColor = %2 Green = %3 Blue = %4",
+    "message0": "Set light color\nIndex = %1\nRed = %2 Green = %3 Blue = %4",
     "args0": [
       {
         "type": "input_value",
