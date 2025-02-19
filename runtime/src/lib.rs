@@ -34,6 +34,11 @@ pub fn init() -> Uint8ClampedArray  {
 }
 
 #[wasm_bindgen]
+pub fn compile(input: &str) -> String {
+    return input.to_string();
+}
+
+#[wasm_bindgen]
 pub fn render() {
     FPS_PRINTER.tick();
 
@@ -41,7 +46,6 @@ pub fn render() {
     do_scene(scene);
     scene.render();
 }
-
 
 fn do_scene(scene: &mut Scene) {
     const BLUE: Color = Color::from_rgb(0, 0, 255);

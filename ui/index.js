@@ -123,9 +123,13 @@ function run(workspace) {
     generator.finish();
   }
 
-  const output = generator.workspaceToCode(workspace);
-  console.log(JSON.parse(output));
+  const variables = Blockly.Variables.allUsedVarModels(workspace).map(variable => variable.name);
+  const body = JSON.parse(generator.workspaceToCode(workspace));
+  const ast = { variables, body };
 
-  generator.finish();
+  console.log('AST', ast);
 
+  const bytecode = wasm.compile(ast);
+
+  console.log('Bytecode', bytecode);
 }
