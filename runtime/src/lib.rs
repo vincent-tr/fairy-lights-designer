@@ -1,5 +1,6 @@
 mod render;
 mod fps_printer;
+mod compiler;
 
 use std::time::Duration;
 
@@ -34,8 +35,8 @@ pub fn init() -> Uint8ClampedArray  {
 }
 
 #[wasm_bindgen]
-pub fn compile(input: &str) -> String {
-    return input.to_string();
+pub fn compile(input: &str) -> Result<String, JsError> {
+    compiler::compile(input).map_err(|e| JsError::from(&*e))
 }
 
 #[wasm_bindgen]
