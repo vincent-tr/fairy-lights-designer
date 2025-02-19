@@ -21,6 +21,17 @@ class AstGenerator extends Blockly.CodeGenerator {
     this.nameDB_.setVariableMap(workspace.getVariableMap());
     this.nameDB_.populateVariables(workspace);
   }
+
+  scrubNakedValue(value) {
+    return `{ "type": "naked", "value": ${value} }`;
+  }
+/*
+  scrub_(block, code, thisOnly = false) {
+    const nextBlock = block.nextConnection && block.nextConnection.targetBlock();
+    const nextCode = thisOnly ? '' : this.blockToCode(nextBlock);
+    return commentCode + code + nextCode;
+  }
+*/
 }
 
 export const generator = new AstGenerator();
@@ -270,10 +281,13 @@ generator.forBlock['get'] = function(block, generator) {
 
 generator.forBlock['set'] = function(block, generator) {
   const index = generator.valueToCode(block, 'index', Order.ATOMIC);
-  const red = generator.valueToCode(block, 'red', Order.ATOMIC);
-  const green = generator.valueToCode(block, 'green', Order.ATOMIC);
-  const blue = generator.valueToCode(block, 'blue', Order.ATOMIC);
+  const red = generator.valueToCode(block, 'r', Order.ATOMIC);
+  const green = generator.valueToCode(block, 'g', Order.ATOMIC);
+  const blue = generator.valueToCode(block, 'b', Order.ATOMIC);
 
+  if (!index || !red || !green || !blue) {
+    throw new Error('Missing operands');
+  }
   
   return `{ "type": "set", "index": ${index}, "red": ${red}, "green": ${green}, "blue": ${blue} }`;
 };
