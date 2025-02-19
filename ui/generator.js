@@ -23,15 +23,52 @@ class AstGenerator extends Blockly.CodeGenerator {
   }
 
   scrubNakedValue(value) {
-    return `{ "type": "naked", "value": ${value} }`;
+    return JSON.stringify({ 
+      type: 'naked',
+      value
+    });
   }
-/*
+
   scrub_(block, code, thisOnly = false) {
     const nextBlock = block.nextConnection && block.nextConnection.targetBlock();
-    const nextCode = thisOnly ? '' : this.blockToCode(nextBlock);
-    return commentCode + code + nextCode;
+    if (!nextBlock || thisOnly) {
+      return code;
+    }
+
+    // Flatten sequences
+    const next = JSON.parse(this.blockToCode(nextBlock));
+
+    code = {
+      type: 'sequence',
+      items: [JSON.parse(code)],
+    };
+
+    if (next.type === 'sequence') {
+      code.items.push(...next.items);
+    } else {
+      code.items.push(next);
+    }
+
+    return JSON.stringify(code);
   }
-*/
+
+  objValueToCode(block, field) {
+    const raw = this.valueToCode(block, field, Order.ATOMIC);
+    if (!raw) {
+      throw new Error('Missing operand');
+    }
+
+    return JSON.parse(raw);
+  }
+
+  objStatementToCode(block, field) {
+    const raw = this.statementToCode(block, field);
+    if (!raw) {
+      throw new Error('Missing statement');
+    }
+
+    return JSON.parse(raw);
+  }
 }
 
 export const generator = new AstGenerator();
@@ -61,14 +98,10 @@ generator.forBlock['logic_operation'] = function(block, generator) {
 }
 
 generator.forBlock['logic_negate'] = function(block, generator) {
-  const op1 = generator.valueToCode(block, 'BOOL', order);
-
-  if (!op1) {
-    throw new Error('Missing operand');
-  }
+  const value = generator.objValueToCode(block, 'BOOL');
 
   return [
-    `{ "type": "not", "value": ${op1} }`,
+    JSON.stringify({ type: 'not', value }),
     Order.ATOMIC
   ];
 }
@@ -77,7 +110,7 @@ generator.forBlock['logic_boolean'] = function(block, generator) {
   const value = block.getFieldValue('BOOL') === 'TRUE';
 
   return [
-    `{ "type": "literal_boolean", "value": ${value} }`,
+    JSON.stringify({ type: 'literal_boolean', value }),
     Order.ATOMIC
   ];
 }
@@ -86,14 +119,10 @@ generator.forBlock['controls_if'] = function(block, generator) {
   const branches = [];
 
   for (let n = 0; block.getInput('IF' + n); ++n) {
-    const cond = generator.valueToCode(block, 'IF' + n, Order.ATOMIC);
-    const body = generator.statementToCode(block, 'DO' + n);
+    const condition = generator.objValueToCode(block, 'IF' + n);
+    const body = generator.objStatementToCode(block, 'DO' + n);
 
-    if (!cond || !body) {
-      throw new Error('Missing operands');
-    }
-
-    branches.push(`{ "condition": ${cond}, "body": ${body} }`);
+    branches.push({ condition, body });
   }
 
   if (branches.length === 0) {
@@ -101,23 +130,19 @@ generator.forBlock['controls_if'] = function(block, generator) {
   }
 
   if (block.getInput('ELSE')) {
-    const body = generator.statementToCode(block, 'ELSE');
-    branches.push(`{ "condition": null, "body": ${body} }`);
+    const body = generator.objStatementToCode(block, 'ELSE');
+    branches.push({ condition: null, body });
   }
 
-  return `{ "type": "if", "branches": [${branches.join(', ')}] }`;
+  return JSON.stringify({ type: 'if', branches });
 };
 
 generator.forBlock['controls_repeat_ext'] = function(block, generator) {
 
-  const repeats = generator.valueToCode(block, 'TIMES', Order.ATOMIC);
-  const branch = generator.statementToCode(block, 'DO');
+  const times = generator.objValueToCode(block, 'TIMES');
+  const body = generator.objStatementToCode(block, 'DO');
 
-  if (!repeats || !branch) {
-    throw new Error('Missing operands');
-  }
-
-  return `{ "type": "repeat", "times": ${repeats}, "body": ${branch} }`;
+  return JSON.stringify({ type: 'repeat', times, body });
 }
 
 generator.forBlock['controls_whileUntil'] = function(block, generator) {
@@ -127,33 +152,29 @@ generator.forBlock['controls_whileUntil'] = function(block, generator) {
   }
 
   const type = TYPES[block.getFieldValue('MODE')];
-  const cond = generator.valueToCode(block, 'BOOL', Order.ATOMIC);
-  const body = generator.statementToCode(block, 'DO');
+  const condition = generator.objValueToCode(block, 'BOOL');
+  const body = generator.objStatementToCode(block, 'DO');
 
   if (!type) {
     throw new Error('Unknown type: ' + block.getFieldValue('MODE'));
   }
 
-  if (!cond || !body) {
-    throw new Error('Missing operands');
-  }
-
-  return `{ "type": "${type}", "condition": ${cond}, "body": ${body} }`;
+  return JSON.stringify({ type, condition, body });
 }
 
 generator.forBlock['controls_for'] = function(block, generator) {
 
   const variable = generator.getVariableName(block.getFieldValue('VAR'));
-  const argFrom = generator.valueToCode(block, 'FROM', Order.ASSIGNMENT);
-  const argTo = generator.valueToCode(block, 'TO', Order.ASSIGNMENT);
-  const argBy = generator.valueToCode(block, 'BY', Order.ASSIGNMENT);
-  const body = generator.statementToCode(block, 'DO');
+  const from = generator.objValueToCode(block, 'FROM');
+  const to = generator.objValueToCode(block, 'TO');
+  const by = generator.objValueToCode(block, 'BY');
+  const body = generator.objStatementToCode(block, 'DO');
 
-  if (!variable || !argFrom || !argTo || !argBy || !body) {
-    throw new Error('Missing operands');
+  if (!variable) {
+    throw new Error('Missing variable');
   }
 
-  return `{ "type": "for", "variable": "${name}", "from": ${argFrom}, "to": ${argTo}, "by": ${argBy}, "body": ${body} }`;
+  return JSON.stringify({ type: 'for', variable, from, to, by, body });
 }
 
 generator.forBlock['controls_flow_statements'] = function(block, generator) {
@@ -168,14 +189,14 @@ generator.forBlock['controls_flow_statements'] = function(block, generator) {
     throw new Error('Unknown type: ' + block.getFieldValue('FLOW'));
   }
 
-  return `{ "type": "${type}" }`;
+  return JSON.stringify({ type });
 }
 
 generator.forBlock['math_number'] = function(block, generator) {
   const value = block.getFieldValue('NUM');
   
   return [
-    `{ "type": "literal", "value": ${value} }`,
+    JSON.stringify({ type: 'literal', value }),
     Order.ATOMIC
   ];
 }
@@ -194,44 +215,32 @@ generator.forBlock['math_arithmetic'] = function(block, generator) {
 }
 
 generator.forBlock['math_modulo'] = function(block, generator) {
-  const op1 = generator.valueToCode(block, 'A', Order.ATOMIC);
-  const op2 = generator.valueToCode(block, 'B', Order.ATOMIC);
-
-  if (!op1 || !op2) {
-    throw new Error('Missing operands');
-  }
+  const op1 = generator.objValueToCode(block, 'A');
+  const op2 = generator.objValueToCode(block, 'B');
 
   return [
-    `{ "type": "mod", "op1": ${op1}, "op2": ${op2} }`,
+    JSON.stringify({ type: 'mod', op1, op2 }),
     Order.ATOMIC
   ];
 }
 
 generator.forBlock['math_constrain'] = function(block, generator) {
-  const value = generator.valueToCode(block, 'VALUE', Order.ATOMIC);
-  const low = generator.valueToCode(block, 'LOW', Order.ATOMIC);
-  const high = generator.valueToCode(block, 'HIGH', Order.ATOMIC);
-
-  if (!value || !low || !high) {
-    throw new Error('Missing operands');
-  }
+  const value = generator.objValueToCode(block, 'VALUE');
+  const low = generator.objValueToCode(block, 'LOW');
+  const high = generator.objValueToCode(block, 'HIGH');
 
   return [
-    `{ "type": "between", "value": ${value}, "low": ${low}, "high": ${high} }`,
+    JSON.stringify({ type: 'between', value, low, high }),
     Order.ATOMIC
   ];
 }
 
 generator.forBlock['math_random_int'] = function(block, generator) {
-  const min = generator.valueToCode(block, 'FROM', Order.ATOMIC);
-  const max = generator.valueToCode(block, 'TO', Order.ATOMIC);
-
-  if (!min || !max) {
-    throw new Error('Missing operands');
-  }
+  const min = generator.objValueToCode(block, 'FROM');
+  const max = generator.objValueToCode(block, 'TO');
 
   return [
-    `{ "type": "rand", "min": ${min}, "max": ${max} }`,
+    JSON.stringify({ type: 'rand', min, max }),
     Order.ATOMIC
   ];
 }
@@ -240,21 +249,21 @@ generator.forBlock['variables_get'] = function(block, generator) {
   const variable = generator.getVariableName(block.getFieldValue('VAR'));
 
   return [
-    `{ "type": "get_variable", "variable": "${variable}" }`,
+    JSON.stringify({ type: 'get_variable', variable }),
     Order.ATOMIC
   ];
 }
 
 generator.forBlock['variables_set'] = function(block, generator) {
   const variable = generator.getVariableName(block.getFieldValue('VAR'));
-  const value = generator.valueToCode(block, 'VALUE', Order.ATOMIC);
+  const value = generator.objValueToCode(block, 'VALUE');
 
-  return `{ "type": "set_variable", "variable": "${variable}", "value": ${value} }`;
+  return JSON.stringify({ type: 'set_variable', variable, value });
 }
 
 generator.forBlock['len'] = function(block, generator) {
   return [
-    `{ "type": "len" }`,
+    JSON.stringify({ type: 'len' }),
     Order.ATOMIC
   ];
 };
@@ -266,52 +275,45 @@ generator.forBlock['get'] = function(block, generator) {
     'b': 'blue',
   };
 
-  const index = generator.valueToCode(block, 'index', Order.ATOMIC);
+  const index = generator.objValueToCode(block, 'index', Order.ATOMIC);
   const type = TYPES[block.getFieldValue('type')];
 
-  if (!index || !type) {
-    throw new Error('Missing operands');
+  if (!type) {
+    throw new Error('Missing operand');
   }
 
   return [
-    `{ "type": "get", "index": ${index}, "type": "${type}" }`,
+    JSON.stringify({ type: 'get', index, type }),
     Order.ATOMIC
   ];
 };
 
 generator.forBlock['set'] = function(block, generator) {
-  const index = generator.valueToCode(block, 'index', Order.ATOMIC);
-  const red = generator.valueToCode(block, 'r', Order.ATOMIC);
-  const green = generator.valueToCode(block, 'g', Order.ATOMIC);
-  const blue = generator.valueToCode(block, 'b', Order.ATOMIC);
-
-  if (!index || !red || !green || !blue) {
-    throw new Error('Missing operands');
-  }
+  const index = generator.objValueToCode(block, 'index');
+  const red = generator.objValueToCode(block, 'r');
+  const green = generator.objValueToCode(block, 'g');
+  const blue = generator.objValueToCode(block, 'b');
   
-  return `{ "type": "set", "index": ${index}, "red": ${red}, "green": ${green}, "blue": ${blue} }`;
+  return JSON.stringify({ type: 'set', index, red, green, blue });
 };
 
 generator.forBlock['sleep'] = function(block, generator) {
-  const delay = generator.valueToCode(block, 'delay', Order.ATOMIC);
-  return `{ "type": "sleep", "delay": ${delay} }`;
+  const delay = generator.objValueToCode(block, 'delay');
+
+  return JSON.stringify({ type: 'sleep', delay });
 };
 
 function operator_ab(block, generator, operators) {
   const op = operators[block.getFieldValue('OP')];
-  const op1 = generator.valueToCode(block, 'A', Order.ATOMIC);
-  const op2 = generator.valueToCode(block, 'B', Order.ATOMIC);
+  const op1 = generator.objValueToCode(block, 'A');
+  const op2 = generator.objValueToCode(block, 'B');
 
   if (!op) {
     throw new Error('Unknown operator: ' + block.getFieldValue('OP'));
   }
 
-  if (!op1 || !op2) {
-    throw new Error('Missing operands');
-  }
-
   return [
-    `{ "type": "${op}", "op1": ${op1}, "op2": ${op2} }`,
+    JSON.stringify({ type: 'operator', op, op1, op2 }),
     Order.ATOMIC
   ];
 }

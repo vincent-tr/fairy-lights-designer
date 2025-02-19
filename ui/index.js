@@ -56,11 +56,7 @@ function setup_blockly() {
   });
 
   runButton.addEventListener('click', () => {
-    const output = generator.workspaceToCode(workspace);
-    Blockly.Variables.allUsedVarModels(workspace).forEach(variable => {
-      console.log("variable: ", variable.getId(), variable.name);
-    });
-    console.log(JSON.parse(output));
+    run(workspace);
   });
 
   function download(filename, text) {
@@ -110,4 +106,26 @@ function setup_blockly() {
       input.dispatchEvent(event)
     })
   }
+}
+
+function run(workspace) {
+  Blockly.Variables.allUsedVarModels(workspace).forEach(variable => {
+    console.log("variable: ", variable.getId(), variable.name);
+  });
+
+  generator.init(workspace);
+  try {
+    const blocks = workspace.getTopBlocks(true);
+    if (blocks.length !== 1) {
+      throw new Error('Only one top block allowed');
+    }
+  } finally {
+    generator.finish();
+  }
+
+  const output = generator.workspaceToCode(workspace);
+  console.log(JSON.parse(output));
+
+  generator.finish();
+
 }
