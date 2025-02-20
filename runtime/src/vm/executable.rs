@@ -1,6 +1,7 @@
 use std::io::{self, Cursor};
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use super::i24::i24;
+use anyhow::Result;
 
 const MAGIC: u32 = 0x00BABE00;
 
@@ -11,11 +12,11 @@ pub struct Executable {
 }
 
 impl Executable {
-    pub fn from_raw(raw: &[u8]) -> io::Result<Self> {
+    pub fn from_raw(raw: &[u8]) -> Result<Self> {
         let mut reader = Cursor::new(raw);
 
         if !reader.read_u32::<LittleEndian>()? == MAGIC {
-            return Err(io::Error::new(io::ErrorKind::InvalidData, "Invalid magic number"));
+            anyhow::bail!("Invalid magic number");
         }
 
         let stack_size = reader.read_u32::<LittleEndian>()?;
@@ -34,18 +35,39 @@ impl Executable {
         })
     }
 
-    pub fn ro_raw(&self) -> io::Result<Box<[u8]>> {
+    pub fn to_raw(&self) -> Box<[u8]> {
         let mut writer = Cursor::new(Vec::new());
 
-        writer.write_u32::<LittleEndian>(MAGIC)?;
-        writer.write_u32::<LittleEndian>(self.stack_size)?;
-        writer.write_u32::<LittleEndian>(self.locals_size)?;
+        writer.write_u32::<LittleEndian>(MAGIC).unwrap();
+        writer.write_u32::<LittleEndian>(self.stack_size).unwrap();
+        writer.write_u32::<LittleEndian>(self.locals_size).unwrap();
 
         for op in &self.code {
-            writer.write_u32::<LittleEndian>(op.to_raw())?;
+            writer.write_u32::<LittleEndian>(op.to_raw()).unwrap();
         }
 
-        Ok(writer.into_inner().into_boxed_slice())
+        writer.into_inner().into_boxed_slice()
+    }
+
+    pub fn from_text(text: &str) -> Result<Self> {
+        use base64::{Engine as _, engine::general_purpose};
+
+        let raw = general_purpose::STANDARD_NO_PAD.decode(text)?;
+        Self::from_raw(&raw)
+    }
+
+    pub fn to_text(&self) -> String {
+        use base64::{Engine as _, engine::general_purpose};
+
+        general_purpose::STANDARD_NO_PAD.encode(self.to_raw())
+    }
+
+    pub fn new(stack_size: u32, locals_size: u32, code: Vec<OpCode>) -> Self {
+        Self {
+            stack_size,
+            locals_size,
+            code,
+        }
     }
 }
 
