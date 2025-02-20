@@ -23,10 +23,7 @@ class AstGenerator extends Blockly.CodeGenerator {
   }
 
   scrubNakedValue(value) {
-    return JSON.stringify({ 
-      type: 'naked',
-      value
-    });
+    return JSON.stringify({ type: 'naked', value: JSON.parse(value) });
   }
 
   scrub_(block, code, thisOnly = false) {
@@ -313,7 +310,7 @@ function operator_ab(block, generator, operators) {
   }
 
   return [
-    JSON.stringify({ type: 'operator', op, op1, op2 }),
+    JSON.stringify({ type: op, op1, op2 }),
     Order.ATOMIC
   ];
 }
