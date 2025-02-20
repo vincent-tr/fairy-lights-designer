@@ -28,6 +28,7 @@ pub enum Node {
   Rand(Rand),
   GetVariable(GetVariable),
   SetVariable(SetVariable),
+  Len(Len),
   Get(Get),
   Set(Set),
   Sleep(Sleep),

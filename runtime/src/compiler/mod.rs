@@ -1,5 +1,7 @@
 mod ast;
 
+use crate::vm::opcodes;
+
 use anyhow::Result;
 use ast::Program;
 

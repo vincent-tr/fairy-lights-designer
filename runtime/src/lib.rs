@@ -1,6 +1,7 @@
 mod render;
 mod fps_printer;
 mod compiler;
+mod vm;
 
 use std::time::Duration;
 
