@@ -275,7 +275,7 @@ generator.forBlock['get'] = function(block, generator) {
   const index = generator.objValueToCode(block, 'index', Order.ATOMIC);
   const color = COLORS[block.getFieldValue('type')];
 
-  if (!type) {
+  if (!color) {
     throw new Error('Missing operand');
   }
 
