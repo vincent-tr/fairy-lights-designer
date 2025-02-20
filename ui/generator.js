@@ -81,7 +81,7 @@ generator.forBlock['logic_compare'] = function(block, generator) {
     'GTE': 'gte',
   };
 
-  return operator_ab(block, generator, OPERATORS);
+  return operator_ab(block, generator, 'compare', OPERATORS);
 };
 
 generator.forBlock['logic_operation'] = function(block, generator) {
@@ -91,7 +91,7 @@ generator.forBlock['logic_operation'] = function(block, generator) {
     'OR': 'or',
   }
 
-  return operator_ab(block, generator, OPERATORS);
+  return operator_ab(block, generator, 'logic', OPERATORS);
 }
 
 generator.forBlock['logic_negate'] = function(block, generator) {
@@ -208,7 +208,7 @@ generator.forBlock['math_arithmetic'] = function(block, generator) {
     'POWER': 'pow',
   };
 
-  return operator_ab(block, generator, OPERATORS);
+  return operator_ab(block, generator, 'arithmetic', OPERATORS);
 }
 
 generator.forBlock['math_modulo'] = function(block, generator) {
@@ -216,7 +216,7 @@ generator.forBlock['math_modulo'] = function(block, generator) {
   const op2 = generator.objValueToCode(block, 'B');
 
   return [
-    JSON.stringify({ type: 'mod', op1, op2 }),
+    JSON.stringify({ type: 'arithmetic', op: 'mod', op1, op2 }),
     Order.ATOMIC
   ];
 }
@@ -266,21 +266,21 @@ generator.forBlock['len'] = function(block, generator) {
 };
 
 generator.forBlock['get'] = function(block, generator) {
-  const TYPES = {
+  const COLORS = {
     'r': 'red',
     'g': 'green',
     'b': 'blue',
   };
 
   const index = generator.objValueToCode(block, 'index', Order.ATOMIC);
-  const type = TYPES[block.getFieldValue('type')];
+  const color = COLORS[block.getFieldValue('type')];
 
   if (!type) {
     throw new Error('Missing operand');
   }
 
   return [
-    JSON.stringify({ type: 'get', index, type }),
+    JSON.stringify({ type: 'get', index, color }),
     Order.ATOMIC
   ];
 };
@@ -300,7 +300,7 @@ generator.forBlock['sleep'] = function(block, generator) {
   return JSON.stringify({ type: 'sleep', delay });
 };
 
-function operator_ab(block, generator, operators) {
+function operator_ab(block, generator, type, operators) {
   const op = operators[block.getFieldValue('OP')];
   const op1 = generator.objValueToCode(block, 'A');
   const op2 = generator.objValueToCode(block, 'B');
@@ -310,7 +310,7 @@ function operator_ab(block, generator, operators) {
   }
 
   return [
-    JSON.stringify({ type: op, op1, op2 }),
+    JSON.stringify({ type, op, op1, op2 }),
     Order.ATOMIC
   ];
 }
