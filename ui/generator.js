@@ -107,7 +107,7 @@ generator.forBlock['logic_boolean'] = function(block, generator) {
   const value = block.getFieldValue('BOOL') === 'TRUE';
 
   return [
-    JSON.stringify({ type: 'literal_boolean', value }),
+    JSON.stringify({ type: 'literal-boolean', value }),
     Order.ATOMIC
   ];
 }
