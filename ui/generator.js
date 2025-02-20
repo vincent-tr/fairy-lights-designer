@@ -246,7 +246,7 @@ generator.forBlock['variables_get'] = function(block, generator) {
   const variable = generator.getVariableName(block.getFieldValue('VAR'));
 
   return [
-    JSON.stringify({ type: 'get_variable', variable }),
+    JSON.stringify({ type: 'get-variable', variable }),
     Order.ATOMIC
   ];
 }
@@ -255,7 +255,7 @@ generator.forBlock['variables_set'] = function(block, generator) {
   const variable = generator.getVariableName(block.getFieldValue('VAR'));
   const value = generator.objValueToCode(block, 'VALUE');
 
-  return JSON.stringify({ type: 'set_variable', variable, value });
+  return JSON.stringify({ type: 'set-variable', variable, value });
 }
 
 generator.forBlock['len'] = function(block, generator) {
