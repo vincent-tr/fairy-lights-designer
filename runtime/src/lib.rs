@@ -18,7 +18,7 @@ static FPS_PRINTER: FpsPrinter = FpsPrinter::new();
 static mut SCENE : Option<Scene> = None;
 
 #[wasm_bindgen]
-pub fn init() -> Uint8ClampedArray  {
+pub fn init() {
     console_error_panic_hook::set_once();
     wasm_logger::init(wasm_logger::Config::default());
 
@@ -29,10 +29,6 @@ pub fn init() -> Uint8ClampedArray  {
     unsafe {
         SCENE = Some(Scene::new());
     }
-    
-    unsafe { 
-        Uint8ClampedArray::view(render::frame::raw_buffer())
-    }
 }
 
 #[wasm_bindgen]
@@ -41,12 +37,17 @@ pub fn compile(input: &str) -> Result<String, JsError> {
 }
 
 #[wasm_bindgen]
-pub fn render() {
+pub fn render() -> Uint8ClampedArray {
     FPS_PRINTER.tick();
 
     let scene = unsafe { SCENE.as_mut().unwrap() };
     do_scene(scene);
     scene.render();
+
+    
+    unsafe { 
+        Uint8ClampedArray::view(render::frame::raw_buffer())
+    }
 }
 
 fn do_scene(scene: &mut Scene) {

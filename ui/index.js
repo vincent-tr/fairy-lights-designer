@@ -17,14 +17,13 @@ function setup_wasm() {
   const canvas = document.getElementById("canvas");
   const ctx = canvas.getContext("2d");
   
-  const data = wasm.init();
-  const imageData = new ImageData(data, WIDTH, HEIGHT);
+  wasm.init();
   
   requestAnimationFrame(render);
   
   function render() {
-    wasm.render();
-  
+    const data = wasm.render();
+    const imageData = new ImageData(data, WIDTH, HEIGHT);
     ctx.putImageData(imageData, 0, 0);
   
     requestAnimationFrame(render);
