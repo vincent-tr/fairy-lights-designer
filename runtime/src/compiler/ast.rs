@@ -518,7 +518,7 @@ impl AstDisplay for Set {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Sleep {
-    delay: Box<Node>,
+    pub delay: Box<Node>,
 }
 
 impl AstDisplay for Sleep {
