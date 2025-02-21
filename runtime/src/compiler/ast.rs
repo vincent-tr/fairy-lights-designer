@@ -234,7 +234,7 @@ impl AstDisplay for If {
             }
 
             writer.indent();
-            self.body.display(writer);
+            branch.body.display(writer);
             writer.finish_line();
             writer.dedent();
         }
