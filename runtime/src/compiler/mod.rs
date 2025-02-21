@@ -6,7 +6,7 @@ use code_gen::CodeGen;
 use log::info;
 use variables::Variables;
 
-use crate::vm::executable::{Executable, OpCode};
+use crate::vm::{executable::{Executable, OpCode}, i24::i24};
 
 use anyhow::Result;
 use ast::Program;
@@ -104,7 +104,7 @@ impl Compiler {
             ast::CompareOperator::Lte => self.code.emit(OpCode::LessEqual),
             ast::CompareOperator::Gt => self.code.emit(OpCode::Greater),
             ast::CompareOperator::Gte => self.code.emit(OpCode::GreaterEqual),
-        }
+        };
 
         Ok(())
     }
@@ -116,7 +116,7 @@ impl Compiler {
         match logic.op {
             ast::LogicOperator::And => self.code.emit(OpCode::And),
             ast::LogicOperator::Or => self.code.emit(OpCode::Or),
-        }
+        };
 
         Ok(())
     }
@@ -151,7 +151,24 @@ impl Compiler {
     }
 
     fn while_(&mut self, while_: &ast::While) -> Result<()> {
-        todo!()
+
+        let label_begin = self.code.current_index();
+
+        self.node(&while_.condition)?;
+        self.code.emit(OpCode::Not);
+
+        let jumpif = self.code.emit(OpCode::JumpIf { relative_offset: i24::ZERO});
+
+        self.node(&while_.body)?;
+
+        self.code.emit(OpCode::Jump { relative_offset: self.code.compute_relative_offset(label_begin).try_into()?});
+
+        let label_end = self.code.current_index();
+
+        // Update jumps
+        jumpif.update_jump_if(&mut self.code, jumpif.compute_relative_offset(label_end))?;
+
+        Ok(())
     }
 
     fn for_(&mut self, for_: &ast::For) -> Result<()> {
@@ -185,7 +202,7 @@ impl Compiler {
             ast::ArithmeticOperator::Div => self.code.emit(OpCode::Div),
             ast::ArithmeticOperator::Pow => self.code.emit(OpCode::Pow),
             ast::ArithmeticOperator::Mod => self.code.emit(OpCode::Mod),
-        }
+        };
 
         Ok(())
     }
@@ -244,7 +261,7 @@ impl Compiler {
             ast::GetColor::Red => self.code.emit(OpCode::GetRed),
             ast::GetColor::Green => self.code.emit(OpCode::GetGreen),
             ast::GetColor::Blue => self.code.emit(OpCode::GetBlue),
-        }
+        };
 
         Ok(())
     }

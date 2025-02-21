@@ -1,2 +1,2 @@
 pub mod executable;
-mod i24;
+pub mod i24;

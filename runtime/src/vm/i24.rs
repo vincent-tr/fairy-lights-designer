@@ -5,6 +5,10 @@
 #[allow(non_camel_case_types)]
 pub struct i24([u8; 3]);
 
+impl i24 {
+    pub const ZERO: i24 = i24([0, 0, 0]);
+}
+
 #[derive(Debug, Copy, Clone)]
 #[repr(u8)]
 enum ZeroByte {
