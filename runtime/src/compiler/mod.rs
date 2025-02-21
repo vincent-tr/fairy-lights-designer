@@ -1,11 +1,10 @@
 mod ast;
 mod variables;
 
+use log::info;
 use variables::Variables;
 
-use std::collections::HashMap;
-
-use crate::vm::executable::{Executable, OpCode};
+use crate::vm::executable::Executable;
 
 use anyhow::Result;
 use ast::Program;
@@ -13,9 +12,11 @@ use ast::Program;
 const STACK_SIZE: u32 = 100;
 
 pub fn compile(input: &str) -> Result<String> {
-    let ast: Program = serde_json::from_str(input)?;
+    let program: Program = serde_json::from_str(input)?;
 
-    let variables = Variables::new(ast.variables)?;
+    info!("Got input program:\n{}", program);
+
+    let variables = Variables::new(program.variables)?;
 
     let mut code= Vec::new();
     
