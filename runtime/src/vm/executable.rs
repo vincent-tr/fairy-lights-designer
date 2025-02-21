@@ -1,4 +1,4 @@
-use std::io::{self, Cursor};
+use std::{fmt, io::{self, Cursor}};
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use super::i24::i24;
 use anyhow::Result;
@@ -68,6 +68,21 @@ impl Executable {
             locals_size,
             code,
         }
+    }
+}
+
+impl fmt::Display for Executable {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        writeln!(f, "Executable")?;
+        writeln!(f, "  StackSize={}", self.stack_size)?;
+        writeln!(f, "  LocalsSize={}", self.locals_size)?;
+        writeln!(f, "")?;
+
+        for op in &self.code {
+            writeln!(f, "  {}, ", op)?;
+        }
+
+        Ok(())
     }
 }
 
@@ -231,5 +246,39 @@ impl OpCode {
 
     pub fn sleep() -> Self {
         Self::Sleep
+    }
+}
+
+impl fmt::Display for OpCode {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            OpCode::PushConstant { value } => write!(f, "PushConstant({})", Into::<i32>::into(*value)),
+            OpCode::PushTrue => write!(f, "PushTrue"),
+            OpCode::PushFalse => write!(f, "PushFalse"),
+            OpCode::PushVariable { index } => write!(f, "PushVariable({})", index),
+            OpCode::PopVariable { index } => write!(f, "PopVariable({})", index),
+            OpCode::Pop => write!(f, "Pop"),
+            OpCode::Eq => write!(f, "Eq"),
+            OpCode::Neq => write!(f, "Neq"),
+            OpCode::Lt => write!(f, "Lt"),
+            OpCode::Lte => write!(f, "Lte"),
+            OpCode::Gt => write!(f, "Gt"),
+            OpCode::Gte => write!(f, "Gte"),
+            OpCode::And => write!(f, "And"),
+            OpCode::Or => write!(f, "Or"),
+            OpCode::Not => write!(f, "Not"),
+            OpCode::Jump { relative_offset } => write!(f, "Jump({})", Into::<i32>::into(*relative_offset)),
+            OpCode::JumIf { relative_offset } => write!(f, "JumpIf({})", Into::<i32>::into(*relative_offset)),
+            OpCode::Add => write!(f, "Add"),
+            OpCode::Sub => write!(f, "Sub"),
+            OpCode::Mul => write!(f, "Mul"),
+            OpCode::Div => write!(f, "Div"),
+            OpCode::Pow => write!(f, "Pow"),
+            OpCode::Mod => write!(f, "Mod"),
+            OpCode::Len => write!(f, "Len"),
+            OpCode::Get => write!(f, "Get"),
+            OpCode::Set => write!(f, "Set"),
+            OpCode::Sleep => write!(f, "Sleep"),
+        }
     }
 }

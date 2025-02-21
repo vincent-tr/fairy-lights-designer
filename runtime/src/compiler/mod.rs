@@ -21,5 +21,8 @@ pub fn compile(input: &str) -> Result<String> {
     let mut code= Vec::new();
     
     let exec = Executable::new(STACK_SIZE as u32, variables.len() as u32, code);
+
+    info!("Compiled into executable:\n{}", exec);
+
     return Ok(exec.to_text());
 }
