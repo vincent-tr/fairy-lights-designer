@@ -110,7 +110,7 @@ pub enum OpCode {
 
     // Jump
     Jump { relative_offset: i24 },
-    JumIf { relative_offset: i24 },
+    JumpIf { relative_offset: i24 },
 
     // Arithmetic
     Add,
@@ -159,7 +159,7 @@ impl fmt::Display for OpCode {
             OpCode::Or => write!(f, "Or"),
             OpCode::Not => write!(f, "Not"),
             OpCode::Jump { relative_offset } => write!(f, "Jump({})", Into::<i32>::into(*relative_offset)),
-            OpCode::JumIf { relative_offset } => write!(f, "JumpIf({})", Into::<i32>::into(*relative_offset)),
+            OpCode::JumpIf { relative_offset } => write!(f, "JumpIf({})", Into::<i32>::into(*relative_offset)),
             OpCode::Add => write!(f, "Add"),
             OpCode::Sub => write!(f, "Sub"),
             OpCode::Mul => write!(f, "Mul"),
