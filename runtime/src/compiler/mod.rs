@@ -1,6 +1,6 @@
 mod ast;
-mod variables;
 mod code_gen;
+mod variables;
 
 use code_gen::CodeGen;
 use log::info;
@@ -43,7 +43,11 @@ impl Compiler {
     }
 
     pub fn generate(self) -> Executable {
-        Executable::new(STACK_SIZE as u32, self.variables.len() as u32, self.code.build())
+        Executable::new(
+            STACK_SIZE as u32,
+            self.variables.len() as u32,
+            self.code.build(),
+        )
     }
 
     pub fn node(&mut self, node: &ast::Node) -> Result<()> {
@@ -125,11 +129,11 @@ impl Compiler {
     }
 
     fn literal_boolean(&mut self, literal_boolean: &ast::LiteralBoolean) -> Result<()> {
-        if literal_boolean.value {
-            self.code.emit(OpCode::PushTrue);
-        } else {
-            self.code.emit(OpCode::PushFalse);
-        }
+        let value = if literal_boolean.value { 1 } else { 0 };
+
+        self.code.emit(OpCode::PushConstant {
+            value: value.try_into()?,
+        });
 
         Ok(())
     }
@@ -163,7 +167,9 @@ impl Compiler {
     }
 
     fn literal(&mut self, literal: &ast::Literal) -> Result<()> {
-        self.code.emit(OpCode::PushConstant { value: literal.value.try_into()? });
+        self.code.emit(OpCode::PushConstant {
+            value: literal.value.try_into()?,
+        });
 
         Ok(())
     }
@@ -185,22 +191,42 @@ impl Compiler {
     }
 
     fn between(&mut self, between: &ast::Between) -> Result<()> {
-        todo!()
+        // Note: value evaluated twice!
+
+        // between.low <= value
+        self.node(&between.low)?;
+        self.node(&between.value)?;
+        self.code.emit(OpCode::LessEqual);
+
+        // value < between.high
+        self.node(&between.value)?;
+        self.node(&between.high)?;
+        self.code.emit(OpCode::Less);
+
+        self.code.emit(OpCode::And);
+
+        Ok(())
     }
 
     fn rand(&mut self, rand: &ast::Rand) -> Result<()> {
-        todo!()
+        self.code.emit(OpCode::Rand);
+
+        Ok(())
     }
 
     fn get_variable(&mut self, get_variable: &ast::GetVariable) -> Result<()> {
-        self.code.emit(OpCode::PushVariable { index: self.variables.get_index(&get_variable.variable)? });
+        self.code.emit(OpCode::PushVariable {
+            index: self.variables.get_index(&get_variable.variable)?,
+        });
 
         Ok(())
     }
 
     fn set_variable(&mut self, set_variable: &ast::SetVariable) -> Result<()> {
         self.node(&set_variable.value)?;
-        self.code.emit(OpCode::PopVariable { index: self.variables.get_index(&set_variable.variable)? });
+        self.code.emit(OpCode::PopVariable {
+            index: self.variables.get_index(&set_variable.variable)?,
+        });
 
         Ok(())
     }
@@ -239,6 +265,4 @@ impl Compiler {
 
         Ok(())
     }
-
-    
 }

@@ -91,8 +91,6 @@ impl fmt::Display for Executable {
 pub enum OpCode {
     // Stack management
     PushConstant { value: i24 },
-    PushTrue,
-    PushFalse,
     PushVariable { index: u8 },
     PopVariable { index: u8 },
     Pop,
@@ -123,6 +121,7 @@ pub enum OpCode {
     Mod,
     
     // Api
+    Rand,
     Len,
     GetRed,
     GetGreen,
@@ -147,8 +146,6 @@ impl fmt::Display for OpCode {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             OpCode::PushConstant { value } => write!(f, "PushConstant({})", Into::<i32>::into(*value)),
-            OpCode::PushTrue => write!(f, "PushTrue"),
-            OpCode::PushFalse => write!(f, "PushFalse"),
             OpCode::PushVariable { index } => write!(f, "PushVariable({})", index),
             OpCode::PopVariable { index } => write!(f, "PopVariable({})", index),
             OpCode::Pop => write!(f, "Pop"),
@@ -169,6 +166,7 @@ impl fmt::Display for OpCode {
             OpCode::Div => write!(f, "Div"),
             OpCode::Pow => write!(f, "Pow"),
             OpCode::Mod => write!(f, "Mod"),
+            OpCode::Rand => write!(f, "Rand"),
             OpCode::Len => write!(f, "Len"),
             OpCode::GetRed => write!(f, "GetRed"),
             OpCode::GetGreen => write!(f, "GetGreen"),
