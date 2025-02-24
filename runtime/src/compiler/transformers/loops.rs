@@ -170,4 +170,76 @@ impl Transformer for Loops<'_> {
             ],
         }))
     }
+
+    fn transform_repeat(&mut self, mut repeat: ast::Repeat) -> Result<ast::Node> {
+        self.transform_inplace(&mut repeat.times)?;
+        self.transform_inplace(&mut repeat.body)?;
+
+        let counter_var = self.variable_allocator.borrow_mut().new_variable();
+        let times_var = self.variable_allocator.borrow_mut().new_variable();
+
+        // transform
+        //
+        // repeat times {
+        //   body
+        // }
+        //
+        // into
+        //
+        // times_var = times
+        // counter_var = 0;
+        // loop {
+        //   if counter_var >= times_var {
+        //     break;
+        //   }
+        //   counter_var = counter_var + 1;
+        //   body
+        // }
+
+        Ok(ast::Node::Sequence(ast::Sequence {
+            items: vec![
+                Box::new(ast::Node::SetVariable(ast::SetVariable {
+                    variable: times_var.clone(),
+                    value: repeat.times,
+                })),
+                Box::new(ast::Node::SetVariable(ast::SetVariable {
+                    variable: counter_var.clone(),
+                    value: Box::new(ast::Node::Literal(ast::Literal {
+                        value: 0,
+                    })),
+                })),
+                Box::new(ast::Node::Loop(ast::Loop {
+                    body: Box::new(ast::Node::Sequence(ast::Sequence {
+                        items: vec![
+                            Box::new(ast::Node::If(ast::If {
+                                branches: vec![ast::IfBranch {
+                                    condition: Some(Box::new(ast::Node::Compare(ast::Compare {
+                                        op: ast::CompareOperator::Gte,
+                                        op1: Box::new(ast::Node::GetVariable(ast::GetVariable {
+                                            variable: counter_var.clone(),
+                                        })),
+                                        op2: Box::new(ast::Node::GetVariable(ast::GetVariable {
+                                            variable: times_var.clone(),
+                                        })),
+                                    }))),
+                                    body: Box::new(ast::Node::Break(ast::Break {})),
+                                }],
+                            })),
+                            Box::new(ast::Node::SetVariable(ast::SetVariable {
+                                variable: counter_var.clone(),
+                                value: Box::new(ast::Node::Arithmetic(ast::Arithmetic {
+                                    op: ast::ArithmeticOperator::Add,
+                                    op1: Box::new(ast::Node::GetVariable(ast::GetVariable {
+                                        variable: counter_var.clone(),
+                                    })),
+                                    op2: Box::new(ast::Node::Literal(ast::Literal { value: 1 })),
+                                })),
+                            })),
+                            repeat.body,
+                        ],
+                    })),
+                })),
+            ],
+        }))
+    }
 }
