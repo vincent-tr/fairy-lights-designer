@@ -63,6 +63,7 @@ impl Compiler {
             ast::Node::Until(until) => self.until(until),
             ast::Node::While(while_) => self.while_(while_),
             ast::Node::For(for_) => self.for_(for_),
+            ast::Node::Loop(loop_) => self.loop_(loop_),
             ast::Node::Break(break_) => self.break_(break_),
             ast::Node::Continue(continue_) => self.continue_(continue_),
             ast::Node::Literal(literal) => self.literal(literal),
@@ -172,6 +173,10 @@ impl Compiler {
     }
 
     fn for_(&mut self, for_: &ast::For) -> Result<()> {
+        todo!()
+    }
+
+    fn loop_(&mut self, loop_: &ast::Loop) -> Result<()> {
         todo!()
     }
 

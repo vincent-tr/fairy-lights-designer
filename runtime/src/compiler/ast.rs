@@ -43,6 +43,7 @@ pub enum Node {
     Until(Until),
     While(While),
     For(For),
+    Loop(Loop),
     Break(Break),
     Continue(Continue),
     Literal(Literal),
@@ -71,6 +72,7 @@ impl AstDisplay for Node {
             Node::Until(u) => u.display(writer),
             Node::While(w) => w.display(writer),
             Node::For(f) => f.display(writer),
+            Node::Loop(l) => l.display(writer),
             Node::Break(b) => b.display(writer),
             Node::Continue(c) => c.display(writer),
             Node::Literal(l) => l.display(writer),
@@ -316,6 +318,23 @@ impl AstDisplay for For {
         writer.write(", by=");
         self.by.display(writer);
         writer.write(")");
+
+        writer.indent();
+        writer.writeln("");
+        self.body.display(writer);
+        writer.writeln("");
+        writer.dedent();
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Loop {
+    pub body: Box<Node>,
+}
+
+impl AstDisplay for Loop {
+    fn display(&self, writer: &mut AstDisplayWriter) {
+        writer.write("Loop");
 
         writer.indent();
         writer.writeln("");
