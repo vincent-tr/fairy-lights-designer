@@ -1,5 +1,6 @@
 mod compare;
 mod between;
+mod loops;
 
 use std::mem::swap;
 
@@ -9,6 +10,7 @@ use super::ast;
 
 pub use compare::Compare;
 pub use between::Between;
+pub use loops::Loops;
 
 pub struct VariableAllocator<'a> {
     variables: &'a mut Vec<String>,
