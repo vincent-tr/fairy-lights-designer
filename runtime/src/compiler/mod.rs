@@ -1,16 +1,15 @@
 mod ast;
 mod code_gen;
+mod loop_manager;
 mod transformers;
 mod variables;
 
-use code_gen::CodeGen;
+use code_gen::{CodeGen, Updateable};
 use log::info;
+use loop_manager::LoopManagerStack;
 use variables::Variables;
 
-use crate::vm::{
-    executable::{Executable, OpCode},
-    i24::i24,
-};
+use crate::vm::executable::{Executable, OpCode};
 
 use anyhow::Result;
 use ast::Program;
@@ -40,6 +39,7 @@ pub fn compile(input: &str) -> Result<String> {
 struct Compiler {
     code: CodeGen,
     variables: Variables,
+    loop_manager_stack: LoopManagerStack,
 }
 
 impl Compiler {
@@ -47,6 +47,7 @@ impl Compiler {
         Compiler {
             code: CodeGen::new(),
             variables,
+            loop_manager_stack: LoopManagerStack::new(),
         }
     }
 
@@ -149,37 +150,52 @@ impl Compiler {
     fn if_(&mut self, if_: &ast::If) -> Result<()> {
         todo!()
     }
+    /*
+        fn while_(&mut self, while_: &ast::While) -> Result<()> {
+            let label_begin = self.code.current_index();
 
-    fn while_(&mut self, while_: &ast::While) -> Result<()> {
-        let label_begin = self.code.current_index();
+            self.node(&while_.condition)?;
+            self.code.emit(OpCode::Not);
 
-        self.node(&while_.condition)?;
-        self.code.emit(OpCode::Not);
+            let jumpif = self.code.emit(OpCode::JumpIf {
+                relative_offset: i24::ZERO,
+            });
 
-        let jumpif = self.code.emit(OpCode::JumpIf { relative_offset: i24::ZERO});
+            self.node(&while_.body)?;
 
-        self.node(&while_.body)?;
+            info!(
+                "jump: relative_offset={:?}",
+                self.code.compute_relative_offset(label_begin)
+            );
+            // TODO: negative numbers i24 ?!?!?!
 
-        self.code.emit(OpCode::Jump { relative_offset: self.code.compute_relative_offset(label_begin).try_into()?});
+            self.code.emit(OpCode::Jump {
+                relative_offset: self.code.compute_relative_offset(label_begin).try_into()?,
+            });
 
-        let label_end = self.code.current_index();
+            let label_end = self.code.current_index();
 
-        // Update jumps
-        jumpif.update_jump_if(&mut self.code, jumpif.compute_relative_offset(label_end))?;
+            // Update jumps
+            jumpif.update_jump_if(&mut self.code, jumpif.compute_relative_offset(label_end))?;
+
+            Ok(())
+        }
+    */
+
+    fn loop_(&mut self, loop_: &ast::Loop) -> Result<()> {
+        self.loop_manager_stack.begin_loop(&mut self.code);
+        self.node(&loop_.body)?;
+        self.loop_manager_stack.end_loop(&mut self.code)?;
 
         Ok(())
     }
 
-    fn loop_(&mut self, loop_: &ast::Loop) -> Result<()> {
-        todo!()
+    fn break_(&mut self, _break: &ast::Break) -> Result<()> {
+        self.loop_manager_stack.emit_break(&mut self.code)
     }
 
-    fn break_(&mut self, break_: &ast::Break) -> Result<()> {
-        todo!()
-    }
-
-    fn continue_(&mut self, continue_: &ast::Continue) -> Result<()> {
-        todo!()
+    fn continue_(&mut self, _continue: &ast::Continue) -> Result<()> {
+        self.loop_manager_stack.emit_continue(&mut self.code)
     }
 
     fn literal(&mut self, literal: &ast::Literal) -> Result<()> {

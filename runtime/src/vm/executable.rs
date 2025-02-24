@@ -100,8 +100,6 @@ pub enum OpCode {
     NotEqual,
     Less,
     LessEqual,
-    Greater,
-    GreaterEqual,
   
     // Logic
     And,
@@ -153,8 +151,6 @@ impl fmt::Display for OpCode {
             OpCode::NotEqual => write!(f, "NotEqual"),
             OpCode::Less => write!(f, "Less"),
             OpCode::LessEqual => write!(f, "LessEqual"),
-            OpCode::Greater => write!(f, "Greater"),
-            OpCode::GreaterEqual => write!(f, "GreaterEqual"),
             OpCode::And => write!(f, "And"),
             OpCode::Or => write!(f, "Or"),
             OpCode::Not => write!(f, "Not"),
