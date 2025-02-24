@@ -6,11 +6,11 @@ use anyhow::Result;
 use super::ast;
 
 pub struct Loops<'a> {
-    variable_allocator: RefCell<VariableAllocator<'a>>,
+    variable_allocator: &'a RefCell<VariableAllocator<'a>>,
 }
 
 impl<'a> Loops<'a> {
-    pub fn new(variable_allocator: RefCell<VariableAllocator<'a>>) -> Self {
+    pub fn new(variable_allocator: &'a RefCell<VariableAllocator<'a>>) -> Self {
         Self { variable_allocator }
     }
 }

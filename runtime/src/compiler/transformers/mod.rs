@@ -1,18 +1,28 @@
-mod compare;
 mod between;
+mod compare;
 mod loops;
 
-use std::mem::swap;
+use std::{cell::RefCell, mem::swap};
 
 use anyhow::Result;
 
-use super::ast;
+use super::ast::{self, Program};
 
-pub use compare::Compare;
-pub use between::Between;
-pub use loops::Loops;
+use between::Between;
+use compare::Compare;
+use loops::Loops;
 
-pub struct VariableAllocator<'a> {
+pub fn transform(program: &mut Program) -> Result<()> {
+    let variable_allocator = RefCell::new(VariableAllocator::new(&mut program.variables));
+
+    Loops::new(&variable_allocator).transform_inplace(&mut program.body)?;
+    Between::new(&variable_allocator).transform_inplace(&mut program.body)?;
+    Compare::new(&variable_allocator).transform_inplace(&mut program.body)?;
+
+    Ok(())
+}
+
+struct VariableAllocator<'a> {
     variables: &'a mut Vec<String>,
 }
 
@@ -28,7 +38,7 @@ impl<'a> VariableAllocator<'a> {
     }
 }
 
-pub trait Transformer {
+trait Transformer {
     fn transform(&mut self, node: ast::Node) -> Result<ast::Node> {
         match node {
             ast::Node::Sequence(sequence) => self.transform_sequence(sequence),
@@ -105,7 +115,10 @@ pub trait Transformer {
         Ok(ast::Node::Not(not))
     }
 
-    fn transform_literal_boolean(&mut self, literal_boolean: ast::LiteralBoolean) -> Result<ast::Node> {
+    fn transform_literal_boolean(
+        &mut self,
+        literal_boolean: ast::LiteralBoolean,
+    ) -> Result<ast::Node> {
         Ok(ast::Node::LiteralBoolean(literal_boolean))
     }
 

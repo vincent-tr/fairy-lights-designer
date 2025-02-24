@@ -15,9 +15,13 @@ use ast::Program;
 const STACK_SIZE: u32 = 100;
 
 pub fn compile(input: &str) -> Result<String> {
-    let program: Program = serde_json::from_str(input)?;
+    let mut program: Program = serde_json::from_str(input)?;
 
     info!("Got input program:\n{}", program);
+
+    transformers::transform(&mut program)?;
+
+    info!("After transformations:\n{}", program);
 
     let variables = Variables::new(program.variables)?;
     let mut compiler = Compiler::new(variables);

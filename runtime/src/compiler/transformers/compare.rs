@@ -1,6 +1,6 @@
-use std::mem::swap;
+use std::{cell::RefCell, mem::swap};
 
-use super::Transformer;
+use super::{Transformer, VariableAllocator};
 use anyhow::Result;
 
 use super::ast;
@@ -9,7 +9,7 @@ pub struct Compare {
 }
 
 impl Compare {
-    pub fn new() -> Self {
+    pub fn new(_variable_allocator: &RefCell<VariableAllocator>) -> Self {
         Self {}
     }
 }
