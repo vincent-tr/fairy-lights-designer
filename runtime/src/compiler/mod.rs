@@ -1,13 +1,16 @@
 mod ast;
 mod code_gen;
-mod variables;
 mod transformers;
+mod variables;
 
 use code_gen::CodeGen;
 use log::info;
 use variables::Variables;
 
-use crate::vm::{executable::{Executable, OpCode}, i24::i24};
+use crate::vm::{
+    executable::{Executable, OpCode},
+    i24::i24,
+};
 
 use anyhow::Result;
 use ast::Program;
@@ -64,16 +67,11 @@ impl Compiler {
             ast::Node::Not(not) => self.not(not),
             ast::Node::LiteralBoolean(literal_boolean) => self.literal_boolean(literal_boolean),
             ast::Node::If(if_) => self.if_(if_),
-            ast::Node::Repeat(repeat) => self.repeat(repeat),
-            ast::Node::Until(until) => self.until(until),
-            ast::Node::While(while_) => self.while_(while_),
-            ast::Node::For(for_) => self.for_(for_),
             ast::Node::Loop(loop_) => self.loop_(loop_),
             ast::Node::Break(break_) => self.break_(break_),
             ast::Node::Continue(continue_) => self.continue_(continue_),
             ast::Node::Literal(literal) => self.literal(literal),
             ast::Node::Arithmetic(arithmetic) => self.arithmetic(arithmetic),
-            ast::Node::Between(between) => self.between(between),
             ast::Node::Rand(rand) => self.rand(rand),
             ast::Node::GetVariable(get_variable) => self.get_variable(get_variable),
             ast::Node::SetVariable(set_variable) => self.set_variable(set_variable),
@@ -81,6 +79,9 @@ impl Compiler {
             ast::Node::Get(get) => self.get(get),
             ast::Node::Set(set) => self.set(set),
             ast::Node::Sleep(sleep) => self.sleep(sleep),
+            _ => {
+                anyhow::bail!("Unexpected node: {:?}", node);
+            }
         }
     }
 
@@ -108,8 +109,9 @@ impl Compiler {
             ast::CompareOperator::Neq => self.code.emit(OpCode::NotEqual),
             ast::CompareOperator::Lt => self.code.emit(OpCode::Less),
             ast::CompareOperator::Lte => self.code.emit(OpCode::LessEqual),
-            ast::CompareOperator::Gt => self.code.emit(OpCode::Greater),
-            ast::CompareOperator::Gte => self.code.emit(OpCode::GreaterEqual),
+            _ => {
+                anyhow::bail!("Unexpected compare operator: {:?}", compare.op);
+            }
         };
 
         Ok(())
@@ -148,16 +150,7 @@ impl Compiler {
         todo!()
     }
 
-    fn repeat(&mut self, repeat: &ast::Repeat) -> Result<()> {
-        todo!()
-    }
-
-    fn until(&mut self, until: &ast::Until) -> Result<()> {
-        todo!()
-    }
-
     fn while_(&mut self, while_: &ast::While) -> Result<()> {
-
         let label_begin = self.code.current_index();
 
         self.node(&while_.condition)?;
@@ -175,10 +168,6 @@ impl Compiler {
         jumpif.update_jump_if(&mut self.code, jumpif.compute_relative_offset(label_end))?;
 
         Ok(())
-    }
-
-    fn for_(&mut self, for_: &ast::For) -> Result<()> {
-        todo!()
     }
 
     fn loop_(&mut self, loop_: &ast::Loop) -> Result<()> {
@@ -217,25 +206,9 @@ impl Compiler {
         Ok(())
     }
 
-    fn between(&mut self, between: &ast::Between) -> Result<()> {
-        // Note: value evaluated twice!
-
-        // between.low <= value
-        self.node(&between.low)?;
-        self.node(&between.value)?;
-        self.code.emit(OpCode::LessEqual);
-
-        // value < between.high
-        self.node(&between.value)?;
-        self.node(&between.high)?;
-        self.code.emit(OpCode::Less);
-
-        self.code.emit(OpCode::And);
-
-        Ok(())
-    }
-
     fn rand(&mut self, rand: &ast::Rand) -> Result<()> {
+        self.node(&rand.min)?;
+        self.node(&rand.max)?;
         self.code.emit(OpCode::Rand);
 
         Ok(())
@@ -258,7 +231,7 @@ impl Compiler {
         Ok(())
     }
 
-    fn len(&mut self, len: &ast::Len) -> Result<()> {
+    fn len(&mut self, _len: &ast::Len) -> Result<()> {
         self.code.emit(OpCode::Len);
 
         Ok(())
