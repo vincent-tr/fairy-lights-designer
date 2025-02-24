@@ -1,6 +1,7 @@
 mod ast;
 mod code_gen;
 mod variables;
+mod transformers;
 
 use code_gen::CodeGen;
 use log::info;
