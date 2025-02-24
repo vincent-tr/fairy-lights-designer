@@ -37,6 +37,11 @@ impl LoopManager {
     }
 
     fn end(self, code: &mut CodeGen) -> Result<()> {
+        // emit jump to begin
+        code.emit(OpCode::Jump {
+            relative_offset: code.compute_relative_offset(self.label_begin).try_into()?,
+        });
+
         // end_label is now the current index
         let label_end = code.current_index();
 
