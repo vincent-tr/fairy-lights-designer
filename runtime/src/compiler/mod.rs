@@ -9,7 +9,7 @@ use log::info;
 use loop_manager::LoopManagerStack;
 use variables::Variables;
 
-use crate::vm::executable::{Executable, OpCode};
+use crate::vm::{executable::{Executable, OpCode}, i24::i24};
 
 use anyhow::Result;
 use ast::Program;
@@ -29,7 +29,7 @@ pub fn compile(input: &str) -> Result<String> {
     let mut compiler = Compiler::new(variables);
 
     compiler.node(&program.body)?;
-    let exec = compiler.generate();
+    let exec = compiler.generate()?;
 
     info!("Compiled into executable:\n{}", exec);
 
@@ -51,12 +51,14 @@ impl Compiler {
         }
     }
 
-    pub fn generate(self) -> Executable {
-        Executable::new(
+    pub fn generate(self) -> Result<Executable> {
+        self.loop_manager_stack.end()?;
+
+        Ok(Executable::new(
             STACK_SIZE as u32,
             self.variables.len() as u32,
             self.code.build(),
-        )
+        ))
     }
 
     pub fn node(&mut self, node: &ast::Node) -> Result<()> {
@@ -148,7 +150,39 @@ impl Compiler {
     }
 
     fn if_(&mut self, if_: &ast::If) -> Result<()> {
-        todo!()
+        let mut end_jumps = Vec::new();
+
+        for branch in if_.branches.iter() {
+            if let Some(condition) = &branch.condition {
+                // render if
+                self.node(&condition)?;
+                let if_jump = self.code.emit(OpCode::JumpIf { relative_offset: i24::ZERO });
+                let else_jump = self.code.emit(OpCode::Jump { relative_offset: i24::ZERO });
+
+                let offset = if_jump.compute_relative_offset(self.code.current_index());
+                if_jump.update_jump_if(&mut self.code, offset)?;
+
+                self.node(&branch.body)?;
+
+                // go to endif
+                let end_jump = self.code.emit(OpCode::Jump { relative_offset: i24::ZERO });
+                end_jumps.push(end_jump);
+
+                // else = end of block (will branch to else, or next elseif)
+                let offset = else_jump.compute_relative_offset(self.code.current_index());
+                else_jump.update_jump(&mut self.code, offset)?;
+            } else {
+                // else case, last one, only render body
+                self.node(&branch.body)?;
+            }
+        }
+
+        for end_jump in end_jumps {
+            let offset = end_jump.compute_relative_offset(self.code.current_index());
+            end_jump.update_jump(&mut self.code, offset)?;
+        }
+
+        Ok(())
     }
     /*
         fn while_(&mut self, while_: &ast::While) -> Result<()> {
