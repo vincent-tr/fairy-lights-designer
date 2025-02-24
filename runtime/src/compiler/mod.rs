@@ -184,37 +184,6 @@ impl Compiler {
 
         Ok(())
     }
-    /*
-        fn while_(&mut self, while_: &ast::While) -> Result<()> {
-            let label_begin = self.code.current_index();
-
-            self.node(&while_.condition)?;
-            self.code.emit(OpCode::Not);
-
-            let jumpif = self.code.emit(OpCode::JumpIf {
-                relative_offset: i24::ZERO,
-            });
-
-            self.node(&while_.body)?;
-
-            info!(
-                "jump: relative_offset={:?}",
-                self.code.compute_relative_offset(label_begin)
-            );
-            // TODO: negative numbers i24 ?!?!?!
-
-            self.code.emit(OpCode::Jump {
-                relative_offset: self.code.compute_relative_offset(label_begin).try_into()?,
-            });
-
-            let label_end = self.code.current_index();
-
-            // Update jumps
-            jumpif.update_jump_if(&mut self.code, jumpif.compute_relative_offset(label_end))?;
-
-            Ok(())
-        }
-    */
 
     fn loop_(&mut self, loop_: &ast::Loop) -> Result<()> {
         self.loop_manager_stack.begin_loop(&mut self.code);
