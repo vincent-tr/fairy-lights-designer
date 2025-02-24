@@ -317,7 +317,7 @@ impl AstDisplay for For {
         self.to.display(writer);
         writer.write(", by=");
         self.by.display(writer);
-        writer.write(")");
+        writer.writeln(")");
 
         writer.indent();
         writer.writeln("");
@@ -334,7 +334,7 @@ pub struct Loop {
 
 impl AstDisplay for Loop {
     fn display(&self, writer: &mut AstDisplayWriter) {
-        writer.write("Loop");
+        writer.writeln("Loop");
 
         writer.indent();
         writer.writeln("");
