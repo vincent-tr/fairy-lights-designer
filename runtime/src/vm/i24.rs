@@ -27,11 +27,15 @@ impl TryFrom<i32> for i24 {
     type Error = anyhow::Error;
 
     fn try_from(value: i32) -> anyhow::Result<Self> {
+        
         if value > 0x7FFFFF || value < -0x800000 {
             anyhow::bail!("i24 only accepts values between -0x800000 and 0x7FFFFF!")
         }
-        
-        let repr = unsafe { std::mem::transmute::<i32, I24Repr>(value) };
+
+        const BITS_MASK: u32 = 0xFFFFFF;
+        let bits = value as u32 & BITS_MASK;
+
+        let repr = unsafe { std::mem::transmute::<u32, I24Repr>(bits) };
         Ok(i24(repr.data))
     }
 }
@@ -43,6 +47,7 @@ impl Into<i32> for i24 {
           most_significant_byte: ZeroByte::Zero,
       };
 
-      unsafe { std::mem::transmute::<I24Repr, i32>(repr) }
+      let bits = unsafe { std::mem::transmute::<I24Repr, u32>(repr) };
+      return ((bits as i32) << 8) >> 8;
     }
 }
