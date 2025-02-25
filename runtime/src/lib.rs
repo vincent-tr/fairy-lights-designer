@@ -3,6 +3,8 @@ mod fps_printer;
 mod compiler;
 mod vm;
 
+use std::sync::{LazyLock, Mutex, MutexGuard};
+
 use render::{Color, Scene};
 use vm::executable::Executable;
 use wasm_bindgen::prelude::*;
@@ -12,11 +14,17 @@ use fps_printer::FpsPrinter;
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
+static SCENE : LazyLock<Mutex<Scene>> = LazyLock::new(|| Mutex::new(Scene::new()));
+static VM: LazyLock<Mutex<vm::VM>> = LazyLock::new(|| Mutex::new(vm::VM::new(Box::new(VMApi))));
 static FPS_PRINTER: FpsPrinter = FpsPrinter::new();
 
-static mut SCENE : Option<Scene> = None;
+fn get_scene() -> MutexGuard<'static, Scene> {
+    SCENE.lock().unwrap()
+}
 
-static mut VM: Option<vm::VM> = None;
+fn get_vm() -> MutexGuard<'static, vm::VM> {
+    VM.lock().unwrap()
+}
 
 struct VMApi;
 
@@ -31,15 +39,13 @@ impl vm::ExternalApi for VMApi {
     }
 
     fn get(&self, index: usize) -> (u8, u8, u8) {
-        let scene = unsafe { SCENE.as_ref().unwrap() };
-        let color = scene.get_light_color(index);
+        let color = get_scene().get_light_color(index);
         (color.red(), color.green(), color.blue())
     }
 
     fn set(&self, index: usize, color: (u8, u8, u8)) {
-        let scene = unsafe { SCENE.as_mut().unwrap() };
         let color = Color::from_rgb(color.0, color.1, color.2);
-        scene.set_light_color(index, color);
+        get_scene().set_light_color(index, color);
     }
 }
 
@@ -52,13 +58,9 @@ pub fn init() {
 
     FPS_PRINTER.init();
 
-    unsafe {
-        SCENE = Some(Scene::new());
-    }
-
-    unsafe {
-        VM = Some(vm::VM::new(Box::new(VMApi)));
-    }
+    // force init
+    let _scene = get_scene();
+    let _vm = get_vm();
 }
 
 #[wasm_bindgen]
@@ -69,33 +71,26 @@ pub fn compile(input: &str) -> Result<String, JsError> {
 #[wasm_bindgen]
 pub fn execute(input: &str) -> Result<(), JsError> {
     let exec = Executable::from_text(input).map_err(|e| JsError::from(&*e))?;
+    get_vm().load_executable(exec);
 
-    let vm = unsafe { VM.as_mut().unwrap() };
-    vm.load_executable(exec);
-
-    let scene = unsafe { SCENE.as_mut().unwrap() };
-    scene.reset();
+    get_scene().reset();
 
     Ok(())
 }
 
 #[wasm_bindgen]
 pub fn running() -> bool {
-    let vm = unsafe { VM.as_mut().unwrap() };
-    vm.running()
+    get_vm().running()
 }
 
 #[wasm_bindgen]
 pub fn render() -> Uint8ClampedArray {
     FPS_PRINTER.tick();
 
-    let vm = unsafe { VM.as_mut().unwrap() };
-    vm.tick();
+    get_vm().tick();
 
-    let scene = unsafe { SCENE.as_mut().unwrap() };
     // do_scene(scene);
-    scene.render();
-
+    get_scene().render();
     
     unsafe { 
         Uint8ClampedArray::view(render::frame::raw_buffer())

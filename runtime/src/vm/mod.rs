@@ -10,7 +10,7 @@ use executable::{Executable, OpCode};
 use log::{error, info};
 use machine::Machine;
 
-pub trait ExternalApi {
+pub trait ExternalApi : Sync + Send {
     fn rand(&self, min: i32, max: i32) -> i32;
 
     fn len(&self) -> usize;
