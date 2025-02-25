@@ -12,6 +12,8 @@ pub struct Executable {
 }
 
 impl Executable {
+
+    // TODO: add checksum/size
     pub fn from_raw(raw: &[u8]) -> Result<Self> {
         let mut reader = Cursor::new(raw);
 
@@ -68,6 +70,18 @@ impl Executable {
             locals_size,
             code,
         }
+    }
+
+    pub fn stack_size(&self) -> usize {
+        self.stack_size as usize
+    }
+
+    pub fn locals_size(&self) -> usize {
+        self.locals_size as usize
+    }
+
+    pub fn code(&self) -> &[OpCode] {
+        &self.code
     }
 }
 

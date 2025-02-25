@@ -37,6 +37,10 @@ impl Scene {
         }
     }
 
+    pub fn get_light_color(&self, index: usize) -> Color {
+        self.lights[index]
+    }
+
     pub fn set_light_color(&mut self, index: usize, color: Color) {
         self.lights[index] = color;
     }
