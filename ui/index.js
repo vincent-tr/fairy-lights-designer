@@ -131,4 +131,6 @@ function run(workspace) {
   const bytecode = wasm.compile(JSON.stringify(ast));
 
   console.log('Bytecode', bytecode);
+
+  wasm.execute(bytecode);
 }

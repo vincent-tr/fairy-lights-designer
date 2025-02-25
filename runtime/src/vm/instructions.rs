@@ -5,6 +5,7 @@ use super::{i24::i24, Machine, OpCode};
 use anyhow::Result;
 
 pub fn execute(machine: &mut Machine, opcode: OpCode) -> Result<()> {
+    // debug!("Executing opcode: {:?}", opcode);
     match opcode {
         OpCode::PushConstant { value } => push_constant(machine, value),
         OpCode::PushVariable { index } => push_variable(machine, index),

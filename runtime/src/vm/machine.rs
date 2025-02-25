@@ -88,6 +88,7 @@ impl Machine {
     }
 
     pub fn sleep(&mut self, duration: Duration) {
+        // debug!("Sleeping for {:?}", duration);
         self.wakeup_time = SystemTime::now() + duration;
     }
 
