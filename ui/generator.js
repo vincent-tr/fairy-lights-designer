@@ -212,8 +212,8 @@ generator.forBlock['math_arithmetic'] = function(block, generator) {
 }
 
 generator.forBlock['math_modulo'] = function(block, generator) {
-  const op1 = generator.objValueToCode(block, 'A');
-  const op2 = generator.objValueToCode(block, 'B');
+  const op1 = generator.objValueToCode(block, 'DIVIDEND');
+  const op2 = generator.objValueToCode(block, 'DIVISOR');
 
   return [
     JSON.stringify({ type: 'arithmetic', op: 'mod', op1, op2 }),
