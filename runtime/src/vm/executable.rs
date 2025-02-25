@@ -12,13 +12,15 @@ pub struct Executable {
 }
 
 impl Executable {
-
-    // TODO: add checksum/size
     pub fn from_raw(raw: &[u8]) -> Result<Self> {
         let mut reader = Cursor::new(raw);
 
-        if !reader.read_u32::<LittleEndian>()? == MAGIC {
+        if reader.read_u32::<LittleEndian>()? != MAGIC {
             anyhow::bail!("Invalid magic number");
+        }
+
+        if reader.read_u32::<LittleEndian>()? != Self::compute_crc(raw) {
+            anyhow::bail!("Invalid CRC");
         }
 
         let stack_size = reader.read_u32::<LittleEndian>()?;
@@ -38,9 +40,12 @@ impl Executable {
     }
 
     pub fn to_raw(&self) -> Box<[u8]> {
+        const CRC_OFFSET: u64 = 4; // after magic
+
         let mut writer = Cursor::new(Vec::new());
 
         writer.write_u32::<LittleEndian>(MAGIC).unwrap();
+        writer.write_u32::<LittleEndian>(0).unwrap(); // CRC placeholder
         writer.write_u32::<LittleEndian>(self.stack_size).unwrap();
         writer.write_u32::<LittleEndian>(self.locals_size).unwrap();
 
@@ -48,7 +53,21 @@ impl Executable {
             writer.write_u32::<LittleEndian>(op.to_raw()).unwrap();
         }
 
-        writer.into_inner().into_boxed_slice()
+        let mut raw = writer.into_inner().into_boxed_slice();
+        let crc = Self::compute_crc(&raw);        
+
+        let mut writer = Cursor::new(&mut *raw);
+        writer.set_position(CRC_OFFSET);
+        writer.write_u32::<LittleEndian>(crc).unwrap();
+
+        raw
+    }
+
+    fn compute_crc(raw: &[u8]) -> u32 {
+        // skip first 2 u32: MAGIC and CRC
+        let data = &raw[8..];
+
+        crc::Crc::<u32>::new(&crc::CRC_32_CKSUM).checksum(data)
     }
 
     pub fn from_text(text: &str) -> Result<Self> {
