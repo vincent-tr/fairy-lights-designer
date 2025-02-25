@@ -3,7 +3,7 @@ pub use shapes::*;
 
 pub use super::frame::Color;
 
-use super::frame::{HEIGHT, WIDTH};
+use super::frame::{frame, HEIGHT, WIDTH};
 
 pub const SCREEN: Rectangle = Rectangle::new(Point::new(0, 0), Size::new(WIDTH, HEIGHT));
 
@@ -22,8 +22,7 @@ pub trait Fillable {
 impl Drawable for Point {
     fn draw(&self, color: Color) {
         if SCREEN.contains(self) {
-            let pixel = super::frame::frame().pixel_mut(self.x() as usize, self.y() as usize);
-            *pixel = color;
+            frame().set_pixel(self.x() as usize, self.y() as usize, color);
         }
     }
 }

@@ -73,7 +73,16 @@ pub fn execute(input: &str) -> Result<(), JsError> {
     let vm = unsafe { VM.as_mut().unwrap() };
     vm.load_executable(exec);
 
+    let scene = unsafe { SCENE.as_mut().unwrap() };
+    scene.reset();
+
     Ok(())
+}
+
+#[wasm_bindgen]
+pub fn running() -> bool {
+    let vm = unsafe { VM.as_mut().unwrap() };
+    vm.running()
 }
 
 #[wasm_bindgen]

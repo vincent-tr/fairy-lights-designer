@@ -18,28 +18,6 @@ impl Color {
         Self { r, g, b, a: 255 }
     }
 
-    pub fn to_rgb(&self) -> (u8, u8, u8) {
-        (self.r, self.g, self.b)
-    }
-
-    fn set_rgb(&mut self, r: u8, g: u8, b: u8) {
-        self.r = r;
-        self.g = g;
-        self.b = b;
-    }
-
-    pub fn set_red(&mut self, r: u8) {
-        self.r = r;
-    }
-
-    pub fn set_green(&mut self, g: u8) {
-        self.g = g;
-    }
-
-    pub fn set_blue(&mut self, b: u8) {
-        self.b = b;
-    }
-
     pub const fn red(&self) -> u8 {
         self.r
     }
@@ -60,10 +38,12 @@ pub struct FrameBuffer {
 }
 
 impl FrameBuffer {
+    #[allow(dead_code)]
     pub fn pixel(&self, x: usize, y: usize) -> &Color {
         &self.pixels[self.index(x, y)]
     }
 
+    #[allow(dead_code)]
     pub fn pixel_mut(&mut self, x: usize, y: usize) -> &mut Color {
         &mut self.pixels[self.index(x, y)]
     }

@@ -19,6 +19,7 @@ impl Point {
         self.y
     }
 
+    #[allow(dead_code)]
     pub fn checked_sub(self, other: Point) -> Option<Size> {
         if self.x < other.x || self.y < other.y {
             None
@@ -47,18 +48,22 @@ impl Offset {
         Self { x, y }
     }
 
+    #[allow(dead_code)]
     pub const fn horizontal(x: isize) -> Self {
         Self { x, y: 0 }
     }
 
+    #[allow(dead_code)]
     pub const fn vertical(y: isize) -> Self {
         Self { x: 0, y }
     }
     
+    #[allow(dead_code)]
     pub const fn x(&self) -> isize {
         self.x
     }
     
+    #[allow(dead_code)]
     pub const fn y(&self) -> isize {
         self.y
     }

@@ -25,6 +25,8 @@ function setup_wasm() {
     const data = wasm.render();
     const imageData = new ImageData(data, WIDTH, HEIGHT);
     ctx.putImageData(imageData, 0, 0);
+
+    // console.log('running', wasm.running());
   
     requestAnimationFrame(render);
   }

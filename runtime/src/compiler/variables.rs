@@ -29,6 +29,7 @@ impl Variables {
             .ok_or_else(|| anyhow::anyhow!("Variable not found: {}", name))
     }
 
+    #[allow(dead_code)]
     pub fn get_name(&self, index: u8) -> Result<&str> {
         self.by_index
             .get(index as usize)
