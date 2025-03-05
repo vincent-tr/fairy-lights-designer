@@ -1,17 +1,38 @@
+html {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+  display: grid;
+}
+
 #main {
   display: flex;
 }
 
-#render {
-  height: 100px;
-}
-
-#toolbox {
-  flex: auto;
+#left {
   display: flex;
   flex-direction: column;
 }
 
+#render {
+  height: 500px;
+}
+
+#controls {
+  padding: 5px;
+  background-color: aqua;
+}
+
 #blockly {
   flex: auto;
+}
+
+.button {
+  margin: 5px;
 }

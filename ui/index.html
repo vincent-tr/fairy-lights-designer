@@ -10,18 +10,20 @@
   <body>
     <div id="main">
 
-      <canvas id="render" width="1000" height="1000" />
+      <div id="left">
+        <canvas id="render" width="1000" height="1000"></canvas>
 
-      <div id="toolbox">
-        <div>
+        <div id="controls">
           <button id="load">Load</button>
           <button id="save">Save</button>
           <button id="run">Run</button>
+
           <input id="bytecode" type="text" value="" readonly/>
         </div>
-        <div id="blockly" />
       </div>
-      
+
+      <div id="blockly"></div>
+
     </div>
   </body>
 </html>
