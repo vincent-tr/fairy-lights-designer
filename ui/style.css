@@ -22,11 +22,11 @@ body {
 
 #render {
   height: 500px;
+  margin: 5px;
 }
 
 #controls {
   padding: 5px;
-  background-color: aqua;
 }
 
 #blockly {
