@@ -4,8 +4,8 @@
   "description": "Fairy lights designer",
   "main": "index.js",
   "scripts": {
-    "build": "webpack --config webpack.config.js",
-    "start": "webpack-dev-server"
+    "build": "webpack --mode=production --config webpack.config.js",
+    "start": "webpack-dev-server --mode=development --config webpack.config.js"
   },
   "dependencies": {
     "@blockly/field-colour": "^5.0.12",
