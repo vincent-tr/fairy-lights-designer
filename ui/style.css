@@ -1,0 +1,17 @@
+#main {
+  display: flex;
+}
+
+#render {
+  height: 100px;
+}
+
+#toolbox {
+  flex: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+#blockly {
+  flex: auto;
+}

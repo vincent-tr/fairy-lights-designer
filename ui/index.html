@@ -3,20 +3,25 @@
   <head>
     <meta charset="utf-8">
     <title>Fairy lights designer</title>
+
+    <script src="./bootstrap.js"></script>
+    <link rel="stylesheet" href="./style.css">
   </head>
   <body>
-    <div style="display:flex;">
-      <canvas id="canvas" width="1000" height="1000"></canvas>
-      <div style="flex:auto; display:flex; flex-direction: column;">
+    <div id="main">
+
+      <canvas id="render" width="1000" height="1000" />
+
+      <div id="toolbox">
         <div>
           <button id="load">Load</button>
           <button id="save">Save</button>
           <button id="run">Run</button>
           <input id="bytecode" type="text" value="" readonly/>
         </div>
-        <div id="blockly" style="flex:auto;"></div>
+        <div id="blockly" />
       </div>
+      
     </div>
   </body>
-  <script src="./bootstrap.js"></script>
 </html>
