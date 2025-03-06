@@ -53,7 +53,6 @@ async fn create_program(
     Ok(Json(id))
 }
 
-// handler to read an existing member
 async fn read_program(
     State(db): State<Collection<Program>>,
     Path(id): Path<String>,
@@ -63,7 +62,6 @@ async fn read_program(
     Ok(Json(program))
 }
 
-// handler to update an existing member
 async fn update_program(
     State(db): State<Collection<Program>>,
     Json(input): Json<Program>,
@@ -79,7 +77,6 @@ async fn update_program(
     Ok(Json(()))
 }
 
-// handler to delete an existing member
 async fn delete_program(
     State(db): State<Collection<Program>>,
     Path(id): Path<String>,
