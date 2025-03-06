@@ -1,0 +1,17 @@
+<?xml version="1.0" standalone="yes"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 5 60 60">
+
+<circle style="fill:rgb(191,233,17); stroke:rgb(0,162,232); stroke-width:1;" cx="10" cy="26.5" r="9"/>
+<path style="fill:rgb(0,162,232); stroke:none;" d="M 6 34 L 6 45 C 6 51 14 51 14 45 L 14 34 L 6 34 z"/>
+<path style="fill: none; stroke:rgb(0,162,232); stroke-width:1;" d="M 7 34 C 7 27 13 27 13 34"/>
+
+<circle style="fill:rgb(204,191,230); stroke:rgb(0,162,232); stroke-width:1;" cx="50" cy="26.5" r="9"/>
+<path style="fill:rgb(0,162,232); stroke:none;" d="M 46 34 L 46 45 C 46 51 54 51 54 45 L 54 34 L 46 34 z"/>
+<path style="fill: none; stroke:rgb(0,162,232); stroke-width:1;" d="M 47 34 C 47 27 53 27 53 34"/>
+
+<circle style="fill:rgb(255,174,200); stroke:rgb(0,162,232); stroke-width:1;" cx="30" cy="34.5" r="9"/>
+<path style="fill:rgb(0,162,232); stroke:none;" d="M 26 42 L 26 53 C 26 59 34 59 34 53 L 34 42 L 26 42 z"/>
+<path style="fill: none; stroke:rgb(0,162,232); stroke-width:1;" d="M 27 42 C 27 35 33 35 33 42"/>
+
+<path style="fill: none; stroke:rgb(0,162,232); stroke-width:2;" d="M 10 45 L 30 53 L 50 45"/>
+</svg>

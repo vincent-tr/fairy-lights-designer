@@ -8,7 +8,7 @@ module.exports = {
     filename: "bootstrap.js",
   },
   plugins: [
-    new CopyWebpackPlugin({ patterns: ['index.html', 'style.css'] })
+    new CopyWebpackPlugin({ patterns: ['index.html', 'style.css', 'favicon.ico'] })
   ],
   experiments: {
     asyncWebAssembly: true,
