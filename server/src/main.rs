@@ -14,6 +14,8 @@ use web_error::WebError;
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    tracing_subscriber::fmt::init();
+    
     let config = Config::parse();
 
     let app = Router::new()
