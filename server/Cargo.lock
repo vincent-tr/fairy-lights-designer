@@ -1702,6 +1702,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "axum",
+ "bson",
  "clap",
  "futures-util",
  "http-body-util",
