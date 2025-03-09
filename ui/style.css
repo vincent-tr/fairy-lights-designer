@@ -25,14 +25,33 @@ body {
   margin: 5px;
 }
 
-#controls {
-  padding: 5px;
+#list {
+  margin: 5px;
+  width: 300px;
+}
+
+button {
+  margin: 5px;
+}
+
+#name {
+  margin: 5px;
+  width: 300px;
 }
 
 #blockly {
   flex: auto;
 }
 
-.button {
+#program {
+  flex: auto;
+  display: flex;
+  align-items: start;
+}
+
+#bytecode {
   margin: 5px;
+  flex: auto;
+  align-self: stretch;
+  resize: none;
 }

@@ -11,21 +11,27 @@
     <div id="main">
 
       <div id="left">
-        <canvas id="render" width="1000" height="1000"></canvas>
+        <div id="management">
+          <select id="list" type="select"></select>
 
-        <div id="controls">
-          <button id="run">Run</button>
-          <input id="bytecode" type="text" value="" readonly/>
+          <br />
 
           <button id="new">New</button>
           <button id="duplicate">Duplicate</button>
           <button id="delete">Delete</button>
 
-          <select id="list" type="select">
-          </select>
+          <br />
 
           <input id="name" type="text" value=""/>
         </div>
+
+        <canvas id="render" width="1000" height="1000"></canvas>
+
+        <div id="program">
+          <button id="run">Run</button>
+          <textarea id="bytecode" value="" readonly></textarea>
+        </div>
+
       </div>
 
       <div id="blockly"></div>
