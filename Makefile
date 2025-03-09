@@ -1,7 +1,7 @@
 build-runtime:
 	cd runtime && wasm-pack build
 
-start: build-runtime
+start-ui: build-runtime
 	cd ui && npm start
 
 build-runtime-release:
@@ -15,4 +15,7 @@ build-server-release:
 
 build: build-server-release
 
-.PHONY: build-runtime start build-runtime-release build-ui-release build-server-release build
+start-server: build
+	cd server && RUST_LOG=info cargo run -- --web-port 3000 --mongo-url ${MONGO_URL}
+
+.PHONY: build-runtime start-ui build-runtime-release build-ui-release build-server-release build start-server

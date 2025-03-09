@@ -18,5 +18,11 @@ module.exports = {
     host: '0.0.0.0',
     port: 12345,
     allowedHosts: 'all',
+    proxy: [
+      {
+        context: ['/api'],
+        target: 'http://localhost:3000',
+      },
+    ],
   },
 };
