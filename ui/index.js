@@ -148,6 +148,11 @@ function onUpdate() {
 
 function onDelete() {
   const id = document.getElementById('list').value;
+  const name = document.getElementById('name').value;
+
+  if (!confirm(`Are you sure you want to delete this program?\n\n  ${name}`)) {
+    return;
+  }
 
   runAsync(async () => {
     await api.remove(id);
