@@ -1,10 +1,11 @@
-import * as wasm from "../runtime/pkg/runtime";
+import * as wasm from '../runtime/pkg/runtime';
 
-import * as Blockly from "blockly";
+import * as Blockly from 'blockly';
 
 import toolbox from './toolbox';
 import blocks from './blocks';
 import { generator } from './generator';
+import * as api from './api';
 
 setup_wasm();
 setup_blockly();
