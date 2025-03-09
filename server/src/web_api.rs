@@ -82,7 +82,7 @@ async fn read_program(
     Path(id): Path<String>,
 ) -> Result<Json<ProgramModel>, WebError> {
     let program = db
-        .find_one(doc! { "_id": id })
+        .find_one(doc! { "_id": &id })
         .await?
         .context("Program not found")?;
 
@@ -97,16 +97,16 @@ async fn read_program(
 async fn update_program(
     State(db): State<Collection<Program>>,
     Path(id): Path<String>,
-    Json(input): Json<Program>,
+    Json(input): Json<ProgramModel>,
 ) -> Result<Json<()>, WebError> {
     let program = Program {
         id: ObjectId::parse_str(&id).context("Invalid ID")?,
         name: input.name,
-        content: input.content,
+        content: bson::to_bson(&input.content).context("Failed to serialize content")?,
     };
 
     let result = db
-        .replace_one(doc! { "_id": input.id.clone() }, program)
+        .replace_one(doc! { "_id": &id }, program)
         .await?;
 
     if result.modified_count == 0 {
@@ -120,7 +120,7 @@ async fn delete_program(
     State(db): State<Collection<Program>>,
     Path(id): Path<String>,
 ) -> Result<Json<DeleteResult>, WebError> {
-    let result = db.delete_one(doc! { "_id": id }).await?;
+    let result = db.delete_one(doc! { "_id": &id }).await?;
 
     if result.deleted_count == 0 {
         None.context("Program not found")?;
