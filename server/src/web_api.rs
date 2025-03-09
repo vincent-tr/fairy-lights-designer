@@ -6,9 +6,14 @@ use axum::{
 };
 use bson::Bson;
 use futures_util::TryStreamExt;
-use mongodb::{bson::{doc, oid::ObjectId}, options::ClientOptions, results::DeleteResult, Client, Collection};
+use mongodb::{
+    bson::{doc, oid::ObjectId},
+    options::ClientOptions,
+    Client, Collection,
+};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use tracing::{debug, info};
 use url::Url;
 
 use super::WebError;
@@ -30,7 +35,7 @@ struct ProgramModel {
 #[derive(Debug, Deserialize, Serialize)]
 struct ListItemModel {
     id: String,
-    name: String,    
+    name: String,
 }
 
 type ListModel = Vec<ListItemModel>;
@@ -43,7 +48,9 @@ pub async fn build(url: &str) -> Result<Router> {
         url.path().trim_start_matches('/').to_string()
     };
 
-    let mut options = ClientOptions::parse(url).await.context("Failed to parse MongoDB URL")?;
+    let mut options = ClientOptions::parse(url)
+        .await
+        .context("Failed to parse MongoDB URL")?;
     options.direct_connection = Some(true);
     let client = Client::with_options(options).context("Failed to connect to MongoDB")?;
     let collection: Collection<Program> = client.database(&db_name).collection(COLLECTION_NAME);
@@ -61,28 +68,35 @@ async fn create_program(
     State(db): State<Collection<Program>>,
     Json(input): Json<ProgramModel>,
 ) -> Result<Json<String>, WebError> {
-    let id = ObjectId::new();
+    let oid = ObjectId::new();
+    let id = oid.to_hex();
+    debug!("Create program: {}", id);
+
     let program = Program {
-        id,
+        id: oid,
         name: input.name,
         content: bson::to_bson(&input.content).context("Failed to serialize content")?,
     };
 
     let result = db.insert_one(program).await?;
 
-    if result.inserted_id != bson::Bson::ObjectId(id) {
+    if result.inserted_id != bson::Bson::ObjectId(oid) {
         None.context("Failed to insert program")?;
     }
 
-    Ok(Json(id.to_hex()))
+    info!("Created program: {}", id);
+    Ok(Json(id))
 }
 
 async fn read_program(
     State(db): State<Collection<Program>>,
     Path(id): Path<String>,
 ) -> Result<Json<ProgramModel>, WebError> {
+    debug!("Read program: {}", id);
+    let oid = ObjectId::parse_str(&id).context("Invalid ID")?;
+
     let program = db
-        .find_one(doc! { "_id": &id })
+        .find_one(doc! { "_id": &oid })
         .await?
         .context("Program not found")?;
 
@@ -99,51 +113,57 @@ async fn update_program(
     Path(id): Path<String>,
     Json(input): Json<ProgramModel>,
 ) -> Result<Json<()>, WebError> {
+    debug!("Update program: {}", id);
+    let oid = ObjectId::parse_str(&id).context("Invalid ID")?;
+
     let program = Program {
-        id: ObjectId::parse_str(&id).context("Invalid ID")?,
+        id: oid,
         name: input.name,
         content: bson::to_bson(&input.content).context("Failed to serialize content")?,
     };
 
-    let result = db
-        .replace_one(doc! { "_id": &id }, program)
-        .await?;
+    let result = db.replace_one(doc! { "_id": &oid }, program).await?;
 
     if result.modified_count == 0 {
         None.context("Program not found")?;
     }
 
+    info!("Updated program: {}", id);
     Ok(Json(()))
 }
 
 async fn delete_program(
     State(db): State<Collection<Program>>,
     Path(id): Path<String>,
-) -> Result<Json<DeleteResult>, WebError> {
-    let result = db.delete_one(doc! { "_id": &id }).await?;
+) -> Result<Json<()>, WebError> {
+    debug!("Delete program: {}", id);
+    let oid = ObjectId::parse_str(&id).context("Invalid ID")?;
+
+    let result = db.delete_one(doc! { "_id": &oid }).await?;
 
     if result.deleted_count == 0 {
         None.context("Program not found")?;
     }
 
-    Ok(Json(result))
+    info!("Deleted program: {}", id);
+    Ok(Json(()))
 }
 
-async fn list_programs(
-    State(db): State<Collection<Program>>,
-) -> Result<Json<ListModel>, WebError> {
-    let cursor = db
-        .find(doc! {})
-        .sort(doc! { "name": 1 })
-        .projection(doc! { "content": 0 })
-        .await?;
+async fn list_programs(State(db): State<Collection<Program>>) -> Result<Json<ListModel>, WebError> {
+    debug!("List programs");
+
+    let cursor = db.find(doc! {}).sort(doc! { "name": 1 }).await?;
+    // TODO: avoid to fetch content
 
     let programs: Vec<Program> = cursor.try_collect().await?;
 
-    let model: ListModel = programs.into_iter().map(|program| ListItemModel {
-        id: program.id.to_hex(),
-        name: program.name,
-    }).collect();
+    let model: ListModel = programs
+        .into_iter()
+        .map(|program| ListItemModel {
+            id: program.id.to_hex(),
+            name: program.name,
+        })
+        .collect();
 
     Ok(Json(model))
 }
