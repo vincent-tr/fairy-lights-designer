@@ -4,9 +4,11 @@ use axum::{
     routing::{delete, get, post, put},
     Json, Router,
 };
+use bson::Bson;
 use futures_util::TryStreamExt;
 use mongodb::{bson::{doc, oid::ObjectId}, options::ClientOptions, results::DeleteResult, Client, Collection};
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use url::Url;
 
 use super::WebError;
@@ -16,13 +18,13 @@ struct Program {
     #[serde(rename = "_id")]
     id: ObjectId,
     name: String,
-    content: Option<String>,
+    content: Bson,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 struct ProgramModel {
     name: String,
-    content: Option<String>,
+    content: Value,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -63,7 +65,7 @@ async fn create_program(
     let program = Program {
         id,
         name: input.name,
-        content: input.content,
+        content: bson::to_bson(&input.content).context("Failed to serialize content")?,
     };
 
     let result = db.insert_one(program).await?;
@@ -86,7 +88,7 @@ async fn read_program(
 
     let model = ProgramModel {
         name: program.name,
-        content: program.content,
+        content: program.content.into(),
     };
 
     Ok(Json(model))

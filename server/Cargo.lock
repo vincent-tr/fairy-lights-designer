@@ -1710,6 +1710,7 @@ dependencies = [
  "mime_guess",
  "mongodb",
  "serde",
+ "serde_json",
  "tokio",
  "tracing-subscriber",
  "url",
