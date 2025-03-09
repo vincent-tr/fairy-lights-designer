@@ -7,10 +7,13 @@ import blocks from './blocks';
 import { generator } from './generator';
 import * as api from './api';
 
-setup_wasm();
-setup_blockly();
+setupWasm();
+setupBlockly();
+setupManagement();
 
-function setup_wasm() {
+window.fairy_api = api;
+
+function setupWasm() {
 
   const WIDTH = 1000;
   const HEIGHT = 1000;
@@ -33,81 +36,18 @@ function setup_wasm() {
   }
 }
 
-function setup_blockly() {
+function setupBlockly() {
   // Disable 'set variable to'
   Blockly.Blocks['math_change'] = null;
 
   Blockly.defineBlocksWithJsonArray(blocks);
   const workspace = Blockly.inject('blockly', { toolbox });
 
-  const loadButton = document.getElementById('load');
-  const saveButton = document.getElementById('save');
   const runButton = document.getElementById('run');
-
-  loadButton.addEventListener('click', async () => {
-    const file = await open({ accept: '.json' });
-    const text = await file.text();
-    const state = JSON.parse(text);
-
-    Blockly.serialization.workspaces.load(state, workspace);
-  });
-
-  saveButton.addEventListener('click', async () => {
-    const state = Blockly.serialization.workspaces.save(workspace);
-    download('workspace.json', JSON.stringify(state));
-  });
 
   runButton.addEventListener('click', () => {
     run(workspace);
   });
-
-  function download(filename, text) {
-    const fileBlob = new Blob([text], { type: 'application/octet-binary' })
-    const url = URL.createObjectURL(fileBlob)
-  
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', filename);
-  
-    const event = new MouseEvent('click');
-    link.dispatchEvent(event)
-  
-    // Deallocate resources
-    if (URL.revokeObjectURL)
-      URL.revokeObjectURL(url)
-  }
-  
-  function open(options = {}) {
-    return new Promise((resolve, reject) => {
-      const input = document.createElement('input')
-  
-      if (options.multiple)
-        input.setAttribute('multiple', '')
-  
-      if (options.accept)
-        input.setAttribute('accept', options.accept)
-  
-      input.setAttribute('type', 'file')
-      input.style.display = 'none'
-  
-      input.addEventListener('change', ev => {
-        if (input.files.length) {
-          if (options.multiple)
-            resolve(input.files)
-          else
-            resolve(input.files[0])
-        } else {
-          reject(ev)
-        }
-        input.remove()
-      })
-  
-      document.body.appendChild(input)
-  
-      const event = new MouseEvent('click');
-      input.dispatchEvent(event)
-    })
-  }
 }
 
 function run(workspace) {
@@ -139,4 +79,112 @@ function run(workspace) {
   console.log('Bytecode', bytecode);
 
   wasm.execute(bytecode);
+}
+
+function setupManagement() {
+  const list = document.getElementById('list');
+  list.addEventListener('change', onSelect);
+
+  const newButton = document.getElementById('new');
+  newButton.addEventListener('click', onNew);
+
+  const deleteButton = document.getElementById('delete');
+  deleteButton.addEventListener('click', onDelete);
+
+  const duplicateButton = document.getElementById('duplicate');
+  duplicateButton.addEventListener('click', onDuplicate);
+
+  const name = document.getElementById('name');
+  name.addEventListener('change', onUpdate);
+
+  runAsync(async () => {
+    await refreshList();
+    await setCurrent(list.value);
+  });
+}
+
+function onSelect() {
+  const list = document.getElementById('list');
+  const id = list.value;
+
+  setCurrent(id);
+}
+
+function onNew() {
+  const name = 'New program';
+  const content = '{}';
+
+  runAsync(async () => {
+    const id = await api.create(name, content);
+    await refreshList();
+    await setCurrent(id);
+  });
+}
+
+function onUpdate() {
+  const id = document.getElementById('list').value;
+  const name = document.getElementById('name').value;
+  const content = Blockly.serialization.workspaces.save(Blockly.getMainWorkspace());
+
+  runAsync(async () => {
+    await api.update(id, name, content);
+    await refreshList();
+    await setCurrent(id);
+  });
+}
+
+function onDelete() {
+  const id = document.getElementById('list').value;
+
+  runAsync(async () => {
+    await api.remove(id);
+    await refreshList();
+    await setCurrent(list.value);
+  });
+}
+
+function onDuplicate() {
+  const name = document.getElementById('name').value + ' (copy)';
+  const content = Blockly.serialization.workspaces.save(Blockly.getMainWorkspace());
+
+  runAsync(async () => {
+    const id = await api.create(name, content);
+    await refreshList();
+    await setCurrent(id);
+  });
+}
+
+async function setCurrent(id) {
+  const item = await api.read(id);
+
+  const list = document.getElementById('list');
+  list.value = id;
+
+  const name = document.getElementById('name');
+  name.value = item.name;
+
+  const workspace = Blockly.getMainWorkspace();
+  Blockly.serialization.workspaces.load(item.content, workspace);
+}
+
+async function refreshList() {
+  const list = document.getElementById('list');
+  const items = await api.list();
+
+  while (list.options.length) {
+    list.remove(0);
+  }
+
+  items.forEach(item => {
+    const uiItem = document.createElement('option');
+    uiItem.textContent = item.name;
+    uiItem.value = item.id;
+    list.appendChild(uiItem);
+  });
+}
+
+function runAsync(target) {
+  target().catch(error => {
+    console.error(error);
+  });
 }

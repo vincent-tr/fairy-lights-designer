@@ -35,7 +35,7 @@ export async function update(id, name, content) {
 }
 
 export async function remove(id) {
-  const response = await fetch(`${BASE}/remove/${id}`, {
+  const response = await fetch(`${BASE}/delete/${id}`, {
     method: 'DELETE',
   });
 
