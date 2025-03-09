@@ -36,12 +36,25 @@ function setupWasm() {
   }
 }
 
+let blocklyLoading = false;
+
 function setupBlockly() {
   // Disable 'set variable to'
   Blockly.Blocks['math_change'] = null;
 
   Blockly.defineBlocksWithJsonArray(blocks);
   const workspace = Blockly.inject('blockly', { toolbox });
+
+  workspace.addChangeListener((event) => {
+    if (event.type === Blockly.Events.FINISHED_LOADING) {
+      blocklyLoading = false;
+      return;
+    }
+
+    if (!event.isUiEvent && !blocklyLoading) {
+      onUpdate();
+    }
+  });
 
   const runButton = document.getElementById('run');
 
@@ -164,7 +177,14 @@ async function setCurrent(id) {
   name.value = item.name;
 
   const workspace = Blockly.getMainWorkspace();
-  Blockly.serialization.workspaces.load(item.content, workspace);
+
+  blocklyLoading = true;
+  try {
+    Blockly.serialization.workspaces.load(item.content, workspace);
+  } catch (error) {
+    blocklyLoading = false;
+    throw error;
+  }
 }
 
 async function refreshList() {
