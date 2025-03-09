@@ -15,4 +15,4 @@ build-server-release:
 
 build: build-server-release
 
-.PHONY: build-runtime start
+.PHONY: build-runtime start build-runtime-release build-ui-release build-server-release build
