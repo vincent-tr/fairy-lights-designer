@@ -20,20 +20,28 @@ body {
   flex-direction: column;
 }
 
-#render {
-  height: 500px;
-  margin: 5px;
+#management {
+  display: flex;
+  flex-direction: column;
 }
 
 #list {
   margin: 5px;
-  width: 300px;
+  width: 260px;
   font-size: 16px;
+  align-self: center;
 }
 
 #buttons {
   display: flex;
   flex-direction: row;
+  align-self: center;
+}
+
+
+#render {
+  height: 500px;
+  margin: 5px;
 }
 
 button {
@@ -49,6 +57,12 @@ button > svg {
   width: 2em;
   height: 2em;
   margin-bottom: 5px;
+}
+
+hr {
+  margin-top: 20px;
+  margin-bottom: 20px;
+  width: 100%;
 }
 
 #name {
