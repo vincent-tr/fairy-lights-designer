@@ -28,15 +28,33 @@ body {
 #list {
   margin: 5px;
   width: 300px;
+  font-size: 16px;
+}
+
+#buttons {
+  display: flex;
+  flex-direction: row;
 }
 
 button {
   margin: 5px;
+  padding: 5px;
+  width: 80px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+button > svg {
+  width: 2em;
+  height: 2em;
+  margin-bottom: 5px;
 }
 
 #name {
   margin: 5px;
   width: 300px;
+  font-size: 16px;
 }
 
 #blockly {
