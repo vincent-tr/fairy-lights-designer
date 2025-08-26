@@ -87,7 +87,14 @@ pub fn running() -> bool {
 pub fn render() -> Uint8ClampedArray {
     FPS_PRINTER.tick();
 
-    get_vm().tick();
+    if get_vm().running() {
+        get_vm().tick();
+
+        if !get_vm().running() {
+            // reset scene when program stops
+            get_scene().reset();
+        }
+    }
 
     // do_scene(scene);
     get_scene().render();
