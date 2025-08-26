@@ -124,11 +124,16 @@ async fn update_program(
 
     let result = db.replace_one(doc! { "_id": &oid }, program).await?;
 
-    if result.modified_count == 0 {
+    if result.matched_count == 0 {
         None.context("Program not found")?;
     }
 
-    info!("Updated program: {}", id);
+    if result.modified_count == 1 {
+        info!("Updated program: {}", id);
+    } else {
+        debug!("No change to program: {}", id);
+    }
+
     Ok(Json(()))
 }
 

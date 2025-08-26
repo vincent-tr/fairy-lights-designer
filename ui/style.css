@@ -39,9 +39,24 @@ body {
 }
 
 
-#render {
+#render-container {
   height: 500px;
   margin: 5px;
+  position: relative;
+}
+
+#render {
+  width: 100%;
+  height: 100%;
+}
+
+#render-running {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  height: 30px;
+  width: 30px;
+  fill: white
 }
 
 button {
@@ -79,6 +94,11 @@ hr {
   flex: auto;
   display: flex;
   align-items: start;
+}
+
+#program-actions {
+  display: flex;
+  flex-direction: column;
 }
 
 #bytecode {

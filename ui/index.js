@@ -7,11 +7,14 @@ import blocks from './blocks';
 import { generator } from './generator';
 import * as api from './api';
 
+let blocklyLoading = false;
+let workspace = null;
+
+window.fairy_api = api;
+
 setupWasm();
 setupBlockly();
 setupManagement();
-
-window.fairy_api = api;
 
 function setupWasm() {
 
@@ -20,7 +23,9 @@ function setupWasm() {
   
   const canvas = document.getElementById("render");
   const ctx = canvas.getContext("2d");
-  
+
+  const renderRunning = document.getElementById("render-running");
+
   wasm.init();
   
   requestAnimationFrame(render);
@@ -30,20 +35,19 @@ function setupWasm() {
     const imageData = new ImageData(data, WIDTH, HEIGHT);
     ctx.putImageData(imageData, 0, 0);
 
-    // console.log('running', wasm.running());
-  
+    const running = wasm.running();
+    renderRunning.style.visibility = running ? "visible" : "hidden";
+
     requestAnimationFrame(render);
   }
 }
-
-let blocklyLoading = false;
 
 function setupBlockly() {
   // Disable 'set variable to'
   Blockly.Blocks['math_change'] = null;
 
   Blockly.defineBlocksWithJsonArray(blocks);
-  const workspace = Blockly.inject('blockly', { toolbox });
+  workspace = Blockly.inject('blockly', { toolbox });
 
   workspace.addChangeListener((event) => {
     if (event.type === Blockly.Events.FINISHED_LOADING) {
@@ -57,13 +61,19 @@ function setupBlockly() {
   });
 
   const runButton = document.getElementById('run');
+  const copyButton = document.getElementById('copy');
+  const textbox = document.getElementById('bytecode');
 
   runButton.addEventListener('click', () => {
-    run(workspace);
+    run();
+  });
+
+  copyButton.addEventListener('click', () => {
+    navigator.clipboard.writeText(textbox.value);
   });
 }
 
-function run(workspace) {
+function run() {
   Blockly.Variables.allUsedVarModels(workspace).forEach(variable => {
     console.log("variable: ", variable.getId(), variable.name);
   });
@@ -137,12 +147,17 @@ function onNew() {
 function onUpdate() {
   const id = document.getElementById('list').value;
   const name = document.getElementById('name').value;
-  const content = Blockly.serialization.workspaces.save(Blockly.getMainWorkspace());
+  const content = Blockly.serialization.workspaces.save(workspace);
 
   runAsync(async () => {
     await api.update(id, name, content);
-    await refreshList();
-    await setCurrent(id);
+    
+    // Update name in list
+    const list = document.getElementById('list');
+    const option = list.querySelector(`option[value="${id}"]`);
+    if (option) {
+      option.textContent = name;
+    }
   });
 }
 
@@ -163,7 +178,7 @@ function onDelete() {
 
 function onDuplicate() {
   const name = document.getElementById('name').value + ' (copy)';
-  const content = Blockly.serialization.workspaces.save(Blockly.getMainWorkspace());
+  const content = Blockly.serialization.workspaces.save(workspace);
 
   runAsync(async () => {
     const id = await api.create(name, content);
@@ -173,6 +188,10 @@ function onDuplicate() {
 }
 
 async function setCurrent(id) {
+  wasm.reset();
+  const textbox = document.getElementById('bytecode');
+  textbox.value = "";
+
   const item = await api.read(id);
 
   const list = document.getElementById('list');
@@ -180,8 +199,6 @@ async function setCurrent(id) {
 
   const name = document.getElementById('name');
   name.value = item.name;
-
-  const workspace = Blockly.getMainWorkspace();
 
   blocklyLoading = true;
   try {

@@ -79,6 +79,12 @@ pub fn execute(input: &str) -> Result<(), JsError> {
 }
 
 #[wasm_bindgen]
+pub fn reset() {
+    get_vm().reset();
+    get_scene().reset();
+}
+
+#[wasm_bindgen]
 pub fn running() -> bool {
     get_vm().running()
 }

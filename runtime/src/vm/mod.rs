@@ -31,6 +31,10 @@ impl VM {
         }
     }
 
+    pub fn reset(&mut self) {
+        self.state.stop();
+    }
+
     pub fn running(&self) -> bool {
         self.state.running()
     }
